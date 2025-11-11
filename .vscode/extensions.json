@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ecmel.vscode-html-css",
+        "wholroyd.jinja",
+        "ms-python.vscode-pylance",
+        "ms-python.vscode-python-envs",
+        "Gruntfuggly.todo-tree",
+        "ms-python.autopep8"
+    ]
+}
