@@ -17,18 +17,20 @@ app: Flask = Flask(__name__)
 CORS(app=app)
 
 
-@app.route("/test")
-def test():
+@app.route("/")
+def map():
     """
-    TODO: Docstring
+    Fetches an interactive map of Karlsruhe's railways and displays it as an iframe.
     """
-    return render_template_string(geography.web_map().get_root()._repr_html_())
+    html: str = geography.web_map().get_root()._repr_html_()
+    return render_template_string(html)
 
 
 def json_response(payload: str, status: int = 200) -> str:
     """
     TODO: Docstring
     """
+    # TODO: Dennis: Generate API responses here
     return json.dumps(payload)
 
 
@@ -37,9 +39,7 @@ def json_response(payload: str, status: int = 200) -> str:
 #######################################################################################
 # TODO: Actual DB interactions
 data = SQL()
-con = sqlite3.connect("backend/data.db")
-cur = con.cursor()
-cur.execute("CREATE TABLE IF NOT EXISTS test(a, b, c)")
+con, cur = data.connection()
 
 res = cur.execute("SELECT name FROM sqlite_master").fetchall()
 print(res)

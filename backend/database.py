@@ -34,8 +34,7 @@ class SQL:
         """
         Creates the data tables. Right now only creates a demo table.
         """
-        con: tuple[Connection, Cursor] = self.connection()
-        con[1].execute(
+        _, cur = self.connection()
+        cur.execute(
             "CREATE TABLE IF NOT EXISTS test(a, b, c)"
         )
-
