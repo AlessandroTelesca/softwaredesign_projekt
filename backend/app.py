@@ -6,11 +6,12 @@ TODO: Docstring
 from flask import Flask, json
 from flask_cors import CORS
 import sqlite3
+from database import SQL
 
 #######################################################################################
 # Backend Config                                                                      #
 #######################################################################################
-# TODO: Add RESTful API for Angular frontend
+# TODO: Dennis: Add RESTful API for Angular frontend
 app: Flask = Flask(__name__)
 CORS(app=app)
 
@@ -34,6 +35,7 @@ def json_response(payload: str, status: int = 200) -> str:
 # SQLite Config                                                                       #
 #######################################################################################
 # TODO: Actual DB interactions
+data = SQL()
 con = sqlite3.connect("backend/data.db")
 cur = con.cursor()
 cur.execute("CREATE TABLE IF NOT EXISTS test(a, b, c)")
