@@ -3,10 +3,11 @@ Backend.
 TODO: Docstring
 """
 
-from flask import Flask, json
+from flask import Flask, json, render_template_string
 from flask_cors import CORS
 import sqlite3
 from database import SQL
+import geography
 
 #######################################################################################
 # Backend Config                                                                      #
@@ -21,7 +22,7 @@ def test():
     """
     TODO: Docstring
     """
-    pass
+    return render_template_string(geography.web_map().get_root()._repr_html_())
 
 
 def json_response(payload: str, status: int = 200) -> str:
