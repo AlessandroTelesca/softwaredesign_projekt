@@ -1,5 +1,6 @@
 # Software Design Project
 
+
 ## Config
 Create a Python Virtual Environment using Python >=3.12.  
 Use the recommended extensions from `.vscode/extensions.json` if you use VSCode.  
