@@ -1,0 +1,10 @@
+<div class="visualizer-root">
+  <!-- added toggle button -->
+  <button type="button" (click)="toggleFlashing()">Toggle Lights</button>
+  <!-- fixed rotation toggle -->
+  <button type="button" (click)="toggleRotation()">
+    {{ rotationEnabled ? 'Stop Rotation' : 'Start Rotation' }}
+  </button>
+
+  <div #canvasContainer class="visualizer-container"></div>
+</div>
