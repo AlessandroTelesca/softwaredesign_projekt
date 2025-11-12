@@ -25,4 +25,5 @@ Start web app inside frontend/. `ng serve --open --port 8080`
 
 ## Sources
 [Build a CRUD App with Python, Flask, and Angular](https://developer.okta.com/blog/2019/03/25/build-crud-app-with-python-flask-angular)  
-[Open Street Map using OSMNX: how to retrieve the Hannover subway network?](Ohttps://stackoverflow.com/questions/62067243/open-street-map-using-osmnx-how-to-retrieve-the-hannover-subway-network)
+[Open Street Map using OSMNX: how to retrieve the Hannover subway network?](https://stackoverflow.com/questions/62067243/open-street-map-using-osmnx-how-to-retrieve-the-hannover-subway-network)  
+
