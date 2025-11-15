@@ -5,7 +5,6 @@ TODO: Docstring
 
 from flask import Flask, json, render_template_string
 from flask_cors import CORS
-import sqlite3
 from database import SQL
 import geography
 
@@ -34,6 +33,26 @@ def json_response(payload: str, status: int = 200) -> str:
     return json.dumps(payload)
 
 
+# ==================== REST API ENDPOINTS FOR ANGULAR ==================== #
+
+@app.route("/api/hello", methods=["GET"])
+def api_hello():
+    """
+    Simple endpoint for frontend connectivity test.
+    Returns: { "message": "Hello World" }
+    """
+    return json_response({"message": "Hello World"})
+
+
+@app.route("/api/string/<text>", methods=["GET"])
+def api_string(text):
+    """
+    Returns any string the frontend sends.
+    Example: /api/string/test → { "received": "test" }
+    """
+    return json_response({"received": text})
+
+
 #######################################################################################
 # SQLite Config                                                                       #
 #######################################################################################
@@ -43,3 +62,9 @@ con, cur = data.connection()
 
 res = cur.execute("SELECT name FROM sqlite_master").fetchall()
 print(res)
+
+# Optional: Tabellen anlegen
+data.create_tables()
+
+# Flask-Server starten
+app.run(host="127.0.0.1", port=5000, debug=True)
