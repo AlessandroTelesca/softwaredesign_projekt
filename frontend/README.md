@@ -1,59 +1,33 @@
-# Frontend
+Short instructions to install dependencies and start the application.
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.8.
+Install
 
-## Development server
+- From the repository root, install frontend dependencies by running (PowerShell):
 
-To start a local development server, run:
-
-```bash
-ng serve
+```powershell
+cd frontend; npm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Start
 
-## Code scaffolding
+- Start the backend (run `app.py` from the `backend` folder). Example (PowerShell):
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```powershell
+cd backend; python app.py
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- Start the frontend (from the `frontend` folder):
 
-```bash
-ng generate --help
+```powershell
+cd frontend; npm start
 ```
 
-## Building
+- After the frontend starts a browser will open itself with to tabs.
+    if not: open your browser at `http://localhost:4200/map` and `http://localhost:4200/robot`.
 
-To build the project run:
+Notes
 
-```bash
-ng build
-```
+- Ensure the backend is running and its URL is configured in `src/app/env.ts` if needed.
+- If `npm start` is not defined, `npm run start` or `ng serve` can be used instead.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+If you'd like, I can also add a single PowerShell script to run backend + frontend together.
