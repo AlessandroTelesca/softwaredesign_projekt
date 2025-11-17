@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-map-visualizer',
@@ -10,29 +10,23 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./map-visualizer.component.css']
 })
 export class MapVisualizerComponent implements OnInit {
-  message: string = '';
-  loading: boolean = false;
+  mapUrl: SafeResourceUrl | null = null;
+  loading: boolean = true;
   error: string = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(private sanitizer: DomSanitizer) {}
 
   ngOnInit(): void {
-    this.callApi();
+    const url = 'http://127.0.0.1:5000/';
+    this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-  callApi(): void {
+  onLoad(): void {
+    this.loading = false;
+  }
+
+  reload(): void {
     this.loading = true;
-    this.error = '';
-    this.http.get<any>('http://127.0.0.1:5000/api/hello')
-      .subscribe({
-        next: (response) => {
-          this.message = JSON.stringify(response);
-          this.loading = false;
-        },
-        error: (err) => {
-          this.error = 'Error: ' + err.message;
-          this.loading = false;
-        }
-      });
+    this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl('http://127.0.0.1:5000/');
   }
 }
