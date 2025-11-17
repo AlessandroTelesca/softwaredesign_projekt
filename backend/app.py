@@ -11,7 +11,6 @@ import geography
 #######################################################################################
 # Backend Config                                                                      #
 #######################################################################################
-# TODO: Dennis: Add RESTful API for Angular frontend
 app: Flask = Flask(__name__)
 CORS(app=app)
 
@@ -29,7 +28,6 @@ def json_response(payload: str, status: int = 200) -> str:
     """
     TODO: Docstring
     """
-    # TODO: Dennis: Generate API responses here
     return json.dumps(payload)
 
 
@@ -73,8 +71,8 @@ con, cur = data.connection()
 res = cur.execute("SELECT name FROM sqlite_master").fetchall()
 print(res)
 
-# Optional: Tabellen anlegen
+# NOTE: Uncomment if you don't want any tables
 data.create_tables()
 
-# Flask-Server starten
+# Start Flask server
 app.run(host="127.0.0.1", port=5000, debug=True)

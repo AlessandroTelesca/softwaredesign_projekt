@@ -17,20 +17,16 @@ class SQL:
         Initializes the SQLite database.
         Creates db/data.db next to this file if it does not exist yet.
         """
-        # Basis-Verzeichnis dieser Datei (backend-Ordner)
         base_dir = os.path.dirname(os.path.abspath(__file__))
-
-        # db-Unterordner innerhalb von backend
         db_dir = os.path.join(base_dir, "db")
         os.makedirs(db_dir, exist_ok=True)
 
-        # Standardpfad: backend/db/data.db
         if file is None:
             file = os.path.join(db_dir, "data.db")
 
         self.file = file
 
-        # DB-Datei anlegen und Testtabelle erstellen
+        # Create DB file and connect to it
         con = sqlite3.connect(self.file)
         cur = con.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS test(a, b, c)")
