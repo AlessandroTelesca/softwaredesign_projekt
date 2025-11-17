@@ -33,8 +33,9 @@ def json_response(payload: str, status: int = 200) -> str:
     return json.dumps(payload)
 
 
-# ==================== REST API ENDPOINTS FOR ANGULAR ==================== #
-
+########################################################################################
+# Middleware                                                                           #
+########################################################################################
 @app.route("/api/hello", methods=["GET"])
 def api_hello():
     """
@@ -51,6 +52,15 @@ def api_string(text):
     Example: /api/string/test → { "received": "test" }
     """
     return json_response({"received": text})
+
+
+@app.route("/api/map", methods=["GET"])
+def api_map():
+    """
+    TODO: Docstring
+    """
+    html: str = geography.web_map().get_root()._repr_html_()
+    return json_response({"map": html})
 
 
 #######################################################################################
