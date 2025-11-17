@@ -14,8 +14,8 @@ def web_map():
     railway = ox.features_from_place(place, tags={"railway": "rail"})
     station = ox.features_from_place(place, tags={"railway": "station"})
 
-    railway = railway.explore(style_kwds={"weight": 3})
-    station = station.explore(m=railway, marker_kwds={"radius": 12, "fill": True}, style_kwds={"color": "Red", "fill": "True"})
+    railway = railway.explore(style_kwds={"weight": 3}, tooltip=["maxspeed", "railway", "name", "highspeed"])
+    station = station.explore(m=railway, marker_kwds={"radius": 12, "fill": True}, style_kwds={"color": "Red", "fill": "True"}, tooltip=["name", "description"])
 
     folium.LayerControl().add_to(railway)
     return railway
