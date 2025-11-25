@@ -38,4 +38,4 @@ def get_tram_features() -> tuple[GeoDataFrame, GeoDataFrame]:
     station = ox.features_from_place(place, tags={"railway": "tram_stop"})
 
     #print(ox.features_from_point((8.43915, 48.80257), tags={"highway": "primary", "tram": "yes"}, dist=30000.0))
-    return (railway, station)
+    return railway, station

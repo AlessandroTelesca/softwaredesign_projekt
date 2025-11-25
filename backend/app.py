@@ -24,7 +24,7 @@ def map():
     return render_template_string(html)
 
 
-def json_response(payload: str, status: int = 200) -> str:
+def json_response(payload: str) -> str:
     """
     TODO: Docstring
     """
@@ -55,7 +55,7 @@ def api_string(text):
 @app.route("/api/map", methods=["GET"])
 def api_map():
     """
-    TODO: Docstring
+    This creates an iframe of a map for the frontend.
     """
     html: str = geography.web_map().get_root()._repr_html_()
     return json_response({"map": html})

@@ -27,8 +27,7 @@ class SQL:
         self.file = file
 
         # Create DB file and connect to it
-        con = sqlite3.connect(self.file)
-        cur = con.cursor()
+        con, cur = self.connection()
         cur.execute("CREATE TABLE IF NOT EXISTS test(a, b, c)")
         con.commit()
         con.close()
@@ -50,3 +49,16 @@ class SQL:
         cur.execute("CREATE TABLE IF NOT EXISTS test(a, b, c)")
         con.commit()
         con.close()
+
+
+class DataMigration:
+    """
+    Migrates data from JSON to SQLite.
+    """
+    def __init__(self):
+        """
+        TODO: Docstring
+        """
+        pass
+        # TODO: Data migration
+        # TODO: Figure out way to store this
