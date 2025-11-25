@@ -1,5 +1,5 @@
-import { spawn, exec } from 'child_process';
-import http from 'http';
+const { spawn, exec } = require('child_process');
+const http = require('http');
 
 // Start Angular dev server using npx so we use the local CLI
 const ngServe = spawn('npx', ['ng', 'serve'], { stdio: 'inherit', shell: true });
@@ -8,11 +8,11 @@ const urlBase = 'http://localhost:4200';
 const urls = [`${urlBase}/robot`, `${urlBase}/map`];
 
 function checkServer(): void {
-  http.get(urlBase, (res) => {
+  http.get(urlBase, (res: { statusCode: number; }) => {
     if (res.statusCode && res.statusCode >= 200 && res.statusCode < 400) {
       // Open two tabs in Windows default browser
       const openCmd = urls.map(u => `start "" "${u}"`).join(' && ');
-      exec(openCmd, (err) => {
+      exec(openCmd, (err: any) => {
         if (err) console.error('Failed to open browser tabs:', err);
       });
     } else {

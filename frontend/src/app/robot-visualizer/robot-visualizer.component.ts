@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import * as THREE from 'three';
+import GLTFLoader from 'three/examples/jsm/loaders/GLTFLoader';
 
 @Component({
   selector: 'app-robot-visualizer',
@@ -15,10 +16,8 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
   private camera!: THREE.PerspectiveCamera;
   private frameId: number | null = null;
   private robotModel: THREE.Object3D | null = null;
-
-  // rotation control variable
-  public rotationEnabled = false;
-
+  private tramModel: THREE.Object3D | null = null;
+  private controls: any;
   private lightMeshes: THREE.Mesh[] = [];
   private flashColor = new THREE.Color(0xff0000); // red flash
 
@@ -39,6 +38,7 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
       cancelAnimationFrame(this.frameId);
     }
     this.renderer?.dispose();
+    this.controls?.dispose && this.controls.dispose();
   }
 
   private async initThree() {
@@ -61,6 +61,22 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
 
     this.camera.lookAt(new THREE.Vector3(0, 0.5, 0));
 
+    // OrbitControls (dynamically imported so example module is loaded at runtime)
+    try {
+      const orbitModule = await import('three/examples/jsm/controls/OrbitControls');
+      const OrbitControlsClass = (orbitModule as any).OrbitControls;
+      this.controls = new OrbitControlsClass(this.camera, this.renderer.domElement);
+      this.controls.enableDamping = true;
+      this.controls.dampingFactor = 0.05;
+      this.controls.screenSpacePanning = false;
+      this.controls.minDistance = 0.5;
+      this.controls.maxDistance = 10;
+      this.controls.target.set(0, 0.5, 0);
+      this.controls.update();
+    } catch (e) {
+      console.warn('OrbitControls not available', e);
+    }
+
     // Lights
     const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
     hemi.position.set(0, 20, 0);
@@ -78,11 +94,11 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
     const gltfModule = await import('three/examples/jsm/loaders/GLTFLoader');
 
     const GLTFLoaderClass = (gltfModule as any).GLTFLoader;
-    const loader = new GLTFLoaderClass();
+    const RobotLoader = new GLTFLoaderClass();
 
-    const modelUrl = '/assets/robot.gltf';
-    loader.load(
-      modelUrl,
+    const RobotModelUrl = '/assets/robot.gltf';
+    RobotLoader.load(
+      RobotModelUrl,
       (gltf: any) => {
         this.robotModel = gltf.scene || (gltf.scenes && gltf.scenes[0]);
         if (this.robotModel) {
@@ -113,6 +129,30 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
         }
       }
     );
+
+    const TramLoader = new GLTFLoaderClass();
+    const TramModelUrl = '/assets/bahn.gltf';
+    TramLoader.load(
+      TramModelUrl,
+      (gltf: any) => {
+        this.tramModel = gltf.scene || (gltf.scenes && gltf.scenes[0]);
+        if (this.tramModel) {
+          this.tramModel.position.set(-10.5, 0.5, 0.7);
+          this.scene.add(this.tramModel);
+          this.ToggleTramModel(false);
+        }
+      }
+    );
+  }
+
+  public ToggleTramModel(visible?: boolean) {
+    if (!this.tramModel) return;
+
+    if (typeof visible === 'boolean') {
+      this.tramModel.visible = visible;
+    } else {
+      this.tramModel.visible = !this.tramModel.visible;
+    }
   }
 
   // methods to toggle light flashing and flashing logic
@@ -154,21 +194,14 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  // public method to toggle rotation
-  public toggleRotation(): void {
-    this.rotationEnabled = !this.rotationEnabled;
-  }
-
   private startAnimationLoop = () => {
     this.frameId = requestAnimationFrame(this.startAnimationLoop);
 
+    // Update controls (if available)
+    this.controls?.update && this.controls.update();
+
     // Render
     this.renderer.render(this.scene, this.camera);
-
-    // ROTATION: only rotate when enabled
-    if (this.robotModel && this.rotationEnabled) {
-      this.robotModel.rotation.y += 0.002;
-    }
 
     // call flashing each frame
     this.applyLightFlashing();
