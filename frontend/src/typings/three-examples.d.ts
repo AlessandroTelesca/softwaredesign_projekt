@@ -27,3 +27,40 @@ declare module 'three/examples/jsm/loaders/GLTFLoader' {
 	export { GLTFLoader };
 	export default GLTFLoader;
 }
+
+declare module 'three/examples/jsm/controls/OrbitControls' {
+	import { Camera, EventDispatcher, MOUSE, TOUCH } from 'three';
+
+	export interface OrbitControls extends EventDispatcher {
+		object: Camera;
+		domElement: HTMLElement;
+		enabled: boolean;
+		target: { x: number; y: number; z: number };
+		enableDamping: boolean;
+		dampingFactor: number;
+		screenSpacePanning: boolean;
+		minDistance: number;
+		maxDistance: number;
+		mouseButtons: { LEFT: MOUSE; MIDDLE: MOUSE; RIGHT: MOUSE };
+		touches: { ONE: TOUCH; TWO: TOUCH };
+		update(): void;
+		dispose(): void;
+	}
+
+	export class OrbitControls {
+		constructor(object: Camera, domElement?: HTMLElement);
+		object: Camera;
+		domElement: HTMLElement;
+		enabled: boolean;
+		target: { x: number; y: number; z: number };
+		enableDamping: boolean;
+		dampingFactor: number;
+		screenSpacePanning: boolean;
+		minDistance: number;
+		maxDistance: number;
+		update(): void;
+		dispose(): void;
+	}
+
+	export default OrbitControls;
+}
