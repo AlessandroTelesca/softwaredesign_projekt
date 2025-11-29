@@ -1,0 +1,64 @@
+"""
+Control for the SQLite database.
+"""
+
+import sqlite3
+import os
+from sqlite3 import Connection, Cursor
+
+
+class SQL:
+    """
+    Handles all CRUD requests within the SQLite database.
+    """
+
+    def __init__(self, file: str | None = None):
+        """
+        Initializes the SQLite database.
+        Creates db/data.db next to this file if it does not exist yet.
+        """
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        db_dir = os.path.join(base_dir, "db")
+        os.makedirs(db_dir, exist_ok=True)
+
+        if file is None:
+            file = os.path.join(db_dir, "data.db")
+
+        self.file = file
+
+        # Create DB file and connect to it
+        con, cur = self.connection()
+        cur.execute("CREATE TABLE IF NOT EXISTS test(a, b, c)")
+        con.commit()
+        con.close()
+
+    def connection(self) -> tuple[Connection, Cursor]:
+        """
+        Establishes a connection with the SQLite database.
+        Returns the connection as well as the query cursor.
+        """
+        con = sqlite3.connect(self.file)
+        cur = con.cursor()
+        return con, cur
+
+    def create_tables(self):
+        """
+        Creates the data tables. Right now only creates a demo table.
+        """
+        con, cur = self.connection()
+        cur.execute("CREATE TABLE IF NOT EXISTS test(a, b, c)")
+        con.commit()
+        con.close()
+
+
+class DataMigration:
+    """
+    Migrates data from JSON to SQLite.
+    """
+    def __init__(self):
+        """
+        TODO: Docstring
+        """
+        pass
+        # TODO: Data migration
+        # TODO: Figure out way to store this
