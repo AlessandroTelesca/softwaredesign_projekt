@@ -112,21 +112,3 @@ def build_route_map(
     m.get_root().html.add_child(Element(info_html))
 
     return m
-
-
-def main() -> None:
-    """
-    Führt die Routenerstellung durch und speichert die Karte als HTML-Datei.
-    """
-    print("Berechne Route ...")
-    m = build_route_map()
-
-    output_path = Path(__file__).parent / "route_map.html"
-    m.save(output_path)
-
-    print("\nFertig!")
-    print(f"Die Karte wurde gespeichert unter:\n{output_path}")
-
-
-if __name__ == "__main__":
-    main()

@@ -7,6 +7,8 @@ from flask import Flask, json, render_template_string
 from flask_cors import CORS
 from database import SQL
 import geography
+import route_map
+import route_animation
 
 #######################################################################################
 # Backend Config                                                                      #
@@ -57,7 +59,14 @@ def api_map():
     """
     This creates an iframe of a map for the frontend.
     """
-    html: str = geography.web_map().get_root()._repr_html_()
+    # TODO: Add input to map routes
+    #html: str = geography.web_map().get_root()._repr_html_()
+    html: str = route_map.build_route_map().get_root()._repr_html_()
+    #start = "Karlsruhe Hauptbahnhof, Germany"
+    #end = "Karlsruhe Durlach Bahnhof, Germany"
+    #route_coords = route_animation.compute_route_coords(start, end)
+
+    #html: str = route_animation.build_html(route_coords=route_coords).get_root()._repr_html_()
     return json_response({"map": html})
 
 

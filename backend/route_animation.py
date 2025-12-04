@@ -20,8 +20,10 @@ START = "Karlsruhe Hauptbahnhof, Germany"
 END = "Karlsruhe Durlach Bahnhof, Germany"
 
 
-def compute_route_coords():
-    """Berechnet die Route und gibt eine Liste (lat, lon)-Koordinaten zurück."""
+def compute_route_coords(start: str = START, end: str = END):
+    """
+    Berechnet die Route und gibt eine Liste (lat, lon)-Koordinaten zurück.
+    """
     print(f"[1/3] Lade Straßennetz für: {PLACE!r} ...")
     G = ox.graph_from_place(PLACE, network_type="drive")
 
@@ -40,7 +42,9 @@ def compute_route_coords():
 
 
 def build_html(route_coords):
-    """Erzeugt den HTML-String mit Leaflet und der Animation."""
+    """
+    Erzeugt den HTML-String mit Leaflet und der Animation.
+    """
     # JSON für JavaScript (Liste von [lat, lon])
     route_json = json.dumps(route_coords)
 
@@ -129,19 +133,3 @@ def build_html(route_coords):
 </html>
 """
     return html
-
-
-def main():
-    print("Berechne Route und erzeuge HTML-Datei ...")
-    coords = compute_route_coords()
-    html = build_html(coords)
-
-    output_path = Path(__file__).parent / "route_animation.html"
-    output_path.write_text(html, encoding="utf-8")
-
-    print("\nFertig!")
-    print(f"Die Datei wurde gespeichert unter:\n{output_path}")
-
-
-if __name__ == "__main__":
-    main()
