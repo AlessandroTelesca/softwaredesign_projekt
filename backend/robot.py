@@ -42,11 +42,11 @@ class Robot:
     led_rgb: tuple[int, int, int]
     packages: list[Package] = []
 
-    def __init__(self, is_parked: bool = True, is_door_opened: bool = False,
-                 is_reversing: bool = False,
-                 is_charging: bool = False, battery_status: float = 100.0,
-                 message: str = "", led_rgb: tuple[int, int, int] = (0, 0, 0),
-                 packages: list[Package] = []):
+    def __init__(self, is_parked, is_door_opened,
+                 is_reversing: bool,
+                 is_charging: bool, battery_status: float,
+                 message: str, led_rgb: tuple[int, int, int],
+                 packages: list[Package]):
         """
         TODO: Docstring
         """

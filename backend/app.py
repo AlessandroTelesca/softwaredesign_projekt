@@ -39,6 +39,8 @@ def json_response(payload: str) -> str:
 ########################################################################################
 # Middleware                                                                           #
 ########################################################################################
+
+### Debug
 @app.route("/api/hello", methods=["GET"])
 def api_hello():
     """
@@ -57,6 +59,7 @@ def api_string(text):
     return json_response({"received": text})
 
 
+### Map
 @app.route("/api/map", methods=["GET"])
 def api_map():
     """
@@ -76,30 +79,36 @@ def api_map():
     return json_response({"map": web_map})
 
 
+### Robot
 @app.route("/api/robot/create", methods=["GET"])
 def create_new_robot():
     """
-    TODO: Docstring
+    Creates a new robot with parameters from the request arguments.
     """
-    is_parked = request.args.get("is_parked")
-    is_door_opened = request.args.get("is_door_opened")
-    is_reversing = request.args.get("is_reversing")
-    is_charging = request.args.get("is_charging")
-    battery_status = request.args.get("battery_status")
-    message = request.args.get("message")
-    led_rgb = request.args.get("led_rgb")
-    packages = []  # TODO: Parse packages from request
+    kwargs = {}
+    params = {
+        "is_parked": None,
+        "is_door_opened": None,
+        "is_reversing": None,
+        "is_charging": None,
+        "battery_status": None,
+        "message": None,
+        "led_rgb": None,
+        "packages": None,
+    }
 
-    robot: Robot = Robot(
-        is_parked=is_parked,
-        is_door_opened=is_door_opened,
-        is_reversing=is_reversing,
-        is_charging=is_charging,
-        battery_status=battery_status,
-        message=message,
-        led_rgb=led_rgb,
-        packages=packages,
-    )
+    for key, _ in params.items():
+        if request.args.get(key) is not None or request.args.get(key) != "":
+            match key:
+                case "is_parked" | "is_door_opened" | "is_reversing" | "is_charging":
+                    kwargs[key] = request.args.get(key) == "true"
+                case "battery_status":
+                    kwargs[key] = request.args.get(key)
+                case "packages":
+                    kwargs[key] = []  # TODO: Parse packages from request
+                case _:
+                    kwargs[key] = request.args.get(key)
+    robot: Robot = Robot(**kwargs)
 
     string = "Robot created."
     string += f" is_parked={robot.is_parked}, is_door_opened={robot.is_door_opened}, "
