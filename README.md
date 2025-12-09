@@ -12,9 +12,19 @@ Serves API end points for Angular frontend. Generates an interactive map of Karl
 Run: `flask --app backend/app.py run`  
 Debug Mode: `flask --app backend/app.py run --debug`  
 Open: http://127.0.0.1:5000  
-Debug mode enables on-the-fly changes to the app as well as additional logging statements through Flask.logger.info().  
+Debug mode enables on-the-fly changes to the app as well as additional logging statements through Flask.logger.info(). 
+
+## Middleware API
+The API is called through either POST, or GET requests.  
+Below is a documentation of the possible interactions with the frontend.
+### Debug / Testing
+`/api/hello`: Checks if connection with backend exists and API is online.  
+`/api/string/<text>` Same as /api/hello, but returns the string given to it.
+
+### Robot and Package Logic
+`api/robot/create` creates a new robot.
    
-### Python Virtual Environment
+## Python Virtual Environment
 Get Python virtual environment and install dependencies.  
 Install dependencies: `pip install -r requirements.txt`  
 Add new module dependencies: `pip freeze > requirements.txt`  

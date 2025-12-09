@@ -51,7 +51,7 @@ class Map:
         Returns a web map of all railways of Karlsruhe.
         Has two layers; one for the railways, and one for the stations. Stations are circles.
         """
-        features = self.get_tram_features()
+        features = Map.get_tram_features()
         railway = features[0]
         station = features[1]
 
@@ -67,7 +67,7 @@ class Map:
         folium.LayerControl().add_to(railway)
         return railway
 
-
+    @staticmethod
     def get_tram_features() -> tuple[GeoDataFrame, GeoDataFrame]:
         """
         Returns the railway as well as the tram stations.
