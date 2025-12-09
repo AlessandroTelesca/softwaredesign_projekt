@@ -82,7 +82,7 @@ def api_map():
 
 
 # Robot
-@app.route("/api/robot/create", methods=["POST"])
+@app.route("/api/robot/create", methods=["GET", "POST"])
 def create_new_robot():
     """
     Creates a new robot with parameters from the request arguments.
@@ -114,6 +114,31 @@ def create_new_robot():
     sim.robots.append(robot)
 
     return json_response({"robot_id": len(sim.robots) - 1, "status": kwargs, "robot_count": len(sim.robots)})
+
+
+@app.route("/api/robot/read/<int:robot_id>", methods=["GET"])
+def get_robot_status(robot_id: int):
+    """
+    Retrieves the status of a specific robot by its ID.
+    """
+    if len(sim.robots) == 0:
+        return json_response({"error": "No robots available"}), 404
+    try:
+        robot = sim.robots[robot_id]
+    except IndexError:
+        return json_response({"error": "Robot ID out of range"}), 404
+
+    status = {
+        "is_parked": robot.is_parked,
+        "is_door_opened": robot.is_door_opened,
+        "is_reversing": robot.is_reversing,
+        "is_charging": robot.is_charging,
+        "battery_status": robot.battery_status,
+        "message": robot.message,
+        "led_rgb": robot.led_rgb,
+        "packages": robot.packages,
+    }
+    return json_response({"robot_id": robot_id, "status": status})
 
 
 # Start Flask server

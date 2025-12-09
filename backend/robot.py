@@ -2,22 +2,25 @@
 TODO: Docstring
 """
 from enum import Enum
-from packages import Package, PackageSize
+from packages import Package
 
 
 class Movement(Enum):
     """
     TODO: Docstring
     """
-    LEFT = 0,
-    RIGHT = 1
+    NONE = 0,
+    LEFT = 1,
+    RIGHT = 2
 
 
 class Location(Enum):
     """
     TODO: Docstring
     """
-    pass
+    OUTSIDE = 0,
+    IN_ELEVATOR = 1,
+    INSIDE_TRAM = 2
 
 
 class Lights(Enum):
@@ -47,9 +50,6 @@ class Robot:
                  is_charging: bool, battery_status: float,
                  message: str, led_rgb: tuple[int, int, int],
                  packages: list[Package]):
-        """
-        TODO: Docstring
-        """
         self.is_parked = is_parked
         self.is_door_opened = is_door_opened
         self.is_reversing = is_reversing

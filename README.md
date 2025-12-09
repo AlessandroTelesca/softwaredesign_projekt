@@ -17,12 +17,39 @@ Debug mode enables on-the-fly changes to the app as well as additional logging s
 ## Middleware API
 The API is called through either POST, or GET requests.  
 Below is a documentation of the possible interactions with the frontend.
-### Debug / Testing
-`/api/hello`: Checks if connection with backend exists and API is online.  
-`/api/string/<text>` Same as /api/hello, but returns the string given to it.
 
-### Robot and Package Logic
-`api/robot/create` creates a new robot.
+### Debug / Testing
+`/api/hello` _/ GET_ checks if connection with backend exists and API is online.  
+`/api/string/<text>` _/ GET_ same as /api/hello, but returns the string given to it.
+
+### Robots
+Simulation (number of robots, packages, etc.) is tracked within runtime code. Robots can easily be created through API requests; they are assigned an ID. It is possible, to get their current status.  
+TODO Update robot info, add them to maps
+#### /api/robot/create
+`/api/robot/create` _/ POST_ creates a new robot.
+```
+is_parked: bool
+is_door_opened: bool
+is_reversing: bool
+is_charging: bool
+
+battery_status: float
+message: str
+led_rgb: tuple[int, int, int]
+packages: list[Package]
+```
+Returns the status of the robot as well as its ID.  
+#### /api/robot/read/<robot_id>
+`/api/robot/read/<int:robot_id>` _/ GET_ gets a specified robot by its ID.
+
+#### /api/robot/update/<robot_id>
+TODO
+
+#### /api/robot/delete/<robot_id>
+TODO
+
+### Packages
+TODO
    
 ## Python Virtual Environment
 Get Python virtual environment and install dependencies.  
