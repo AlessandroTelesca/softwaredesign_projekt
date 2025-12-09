@@ -59,6 +59,8 @@ def api_map():
     """
     This creates an iframe of a map for the frontend.
     """
+    map = geography.Map(start="Karlsruhe Hauptbahnhof, Germany", end="Karlsruhe Durlach Bahnhof, Germany")
+    html: str = map.web_map
     # TODO: Add input to map routes
     #html: str = geography.web_map().get_root()._repr_html_()
     html: str = route_map.build_route_map().get_root()._repr_html_()
