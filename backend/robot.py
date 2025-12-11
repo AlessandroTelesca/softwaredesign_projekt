@@ -23,11 +23,22 @@ class Location(Enum):
     INSIDE_TRAM = 2
 
 
-class Lights(Enum):
+class StatusLED(Enum):
     """
     TODO: Docstring
     """
-    pass
+    ERROR = -1,
+    BOOTING = 0,
+    READY = 1,
+    WAITING = 2,
+    ALARM = 3,
+    HUMAN_INTERACTION = 4,
+    WORK_COMPLETED = 5,
+    REVERSING = 6,
+    PARKING = 7,
+    ERROR_INTERACTION = 8,
+    EMERGENCY = 9,
+    HELP_REQUEST = 10
 
 
 class Robot:

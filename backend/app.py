@@ -6,10 +6,9 @@ Includes Flask app configuration and route definitions.
 from flask import Flask, json, render_template_string, request
 from flask_cors import CORS
 
-from robot import Robot, Movement, Location, Lights
+from robot import Robot, Movement, Location, StatusLED
 from packages import Package, PackageSize
 from simulation import Simulation
-
 from geography import Map
 
 #######################################################################################
@@ -25,9 +24,9 @@ def map():
     """
     Fetches an interactive map of Karlsruhe's railways and displays it as an iframe.
     """
-    html: str = Map(city="Karlsruhe", start="Karlsruhe Hauptbahnhof, Germany",
-                    end="Karlsruhe Durlach Bahnhof, Germany").web_map().get_root()._repr_html_()
-    return render_template_string(html)
+    web_map = Map(start="Karlsruhe Hauptbahnhof, Germany",
+                  end="Karlsruhe Durlach Bahnhof, Germany").to_html()
+    return render_template_string(web_map)
 
 
 def json_response(payload: str) -> str:
@@ -65,18 +64,10 @@ def api_map():
     """
     This creates an iframe of a map for the frontend.
     """
-    web_map = Map(start="Karlsruhe Hauptbahnhof, Germany", end="Karlsruhe Durlach Bahnhof, Germany",
-                  city="Karlsruhe").build_route_map().get_root()._repr_html_()
+    web_map = Map(start="Karlsruhe Hauptbahnhof, Germany",
+                  end="Karlsruhe Durlach Bahnhof, Germany").to_html()
 
-    # html: str = map.web_map
-    # TODO: Add input to map routes
-    # html: str = geography.web_map().get_root()._repr_html_()
-    # html: str = route_map.build_route_map().get_root()._repr_html_()
-    # start = "Karlsruhe Hauptbahnhof, Germany"
-    # end = "Karlsruhe Durlach Bahnhof, Germany"
-    # route_coords = route_animation.compute_route_coords(start, end)
-
-    # html: str = route_animation.build_html(route_coords=route_coords).get_root()._repr_html_()
+    # TODO Dennisé: Add input possibilities to map routes
     return json_response({"map": web_map})
 
 
@@ -140,5 +131,5 @@ def get_robot_status(robot_id: int):
     return json_response({"robot_id": robot_id, "status": status})
 
 
-# Start Flask server
-app.run(host="127.0.0.1", port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
