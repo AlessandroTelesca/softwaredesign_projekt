@@ -1,3 +1,7 @@
+"""
+Singleton for the Flask backend.
+Provides a global Simulation instance.
+"""
 from robot import Robot
 
 class Simulation:
@@ -7,7 +11,4 @@ class Simulation:
     robots: list[Robot] = []
 
     def __init__(self, robots: list[Robot] = []):
-        """
-        TODO: Docstring
-        """
         self.robots = robots

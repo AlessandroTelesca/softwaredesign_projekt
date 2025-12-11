@@ -11,14 +11,13 @@ from packages import Package, PackageSize
 from simulation import Simulation
 
 from geography import Map
-import route_map
 
 #######################################################################################
 # Backend Config                                                                      #
 #######################################################################################
 app: Flask = Flask(__name__)
 CORS(app=app)
-sim = Simulation()
+sim: Simulation = Simulation()
 
 
 @app.route("/")
@@ -26,8 +25,8 @@ def map():
     """
     Fetches an interactive map of Karlsruhe's railways and displays it as an iframe.
     """
-    html: str = Map(start="Karlsruhe Hauptbahnhof, Germany", end="Karlsruhe Durlach Bahnhof, Germany",
-                    city="Karlsruhe").web_map().get_root()._repr_html_()
+    html: str = Map(city="Karlsruhe", start="Karlsruhe Hauptbahnhof, Germany",
+                    end="Karlsruhe Durlach Bahnhof, Germany").web_map().get_root()._repr_html_()
     return render_template_string(html)
 
 
