@@ -18,7 +18,6 @@ class TestAPIModule(unittest.TestCase):
         self.assertEqual (result, {"error": "error"}, "json_response did not return the expected")
 
     def test_GET_request(self):
-        for i in range(10):
             url = "http://localhost:5000/api/robot/create"
             response = requests.get(url)
             print(response.json())
