@@ -23,7 +23,7 @@ Below is a documentation of the possible interactions with the frontend.
 `/api/string/<text>` _/ GET_ same as /api/hello, but returns the string given to it.
 
 ### Robots
-Simulation (number of robots, packages, etc.) is tracked within runtime code. Robots can easily be created through API requests; they are assigned an ID. It is possible, to get their current status.  
+Robots can easily be created through API requests; they are assigned an ID. It is possible to get their current status.  
 TODO Update robot info, add them to maps
 #### /api/robot/create
 `/api/robot/create` _/ POST_ creates a new robot.
@@ -39,17 +39,22 @@ led_rgb: tuple[int, int, int]
 packages: list[Package]
 ```
 Returns the status of the robot as well as its ID.  
-#### /api/robot/read/<robot_id>
+#### /api/robot/read/<int::robot_id>
 `/api/robot/read/<int:robot_id>` _/ GET_ gets a specified robot by its ID.
 
-#### /api/robot/update/<robot_id>
+#### /api/robot/update/<int::robot_id>
 TODO
 
-#### /api/robot/delete/<robot_id>
-TODO
+#### /api/robot/delete/<int::robot_id>
+`/api/robot/delete/<int:robot_id>` _/ POST_ deletes a specified robot by its ID.
 
 ### Packages
 TODO
+
+### Simulation
+Simulation (number of robots, packages, etc.) is tracked within runtime code. 
+#### /api/sim/reset
+`/api/robot/delete/<int::robot_id>` _/ POST_ resets the simulation; removes all robots and packages.
    
 ## Python Virtual Environment
 Get Python virtual environment and install dependencies.  

@@ -31,7 +31,7 @@ def map():
 
 def json_response(payload: str) -> str:
     """
-    TODO: Docstring
+    Helper function to return a JSON response.
     """
     return json.dumps(payload)
 
@@ -117,6 +117,8 @@ def get_robot_status(robot_id: int):
         robot = sim.robots[robot_id]
     except IndexError:
         return json_response({"error": "Robot ID out of range"}), 404
+    except TypeError:
+        return json_response({"error": "Invalid Robot ID"}), 400
 
     status = {
         "is_parked": robot.is_parked,
@@ -129,6 +131,34 @@ def get_robot_status(robot_id: int):
         "packages": robot.packages,
     }
     return json_response({"robot_id": robot_id, "status": status})
+
+
+@app.route("/api/robot/delete/<int:robot_id>", methods=["POST"])
+def delete_robot(robot_id: int):
+    """
+    Deletes a robot by its ID.
+    """
+    if len(sim.robots) == 0:
+        return json_response({"error": "No robots available"}), 404
+    try:
+        robot = sim.robots[robot_id]
+    except IndexError:
+        return json_response({"error": "Robot ID out of range"}), 404
+    except TypeError:
+        return json_response({"error": "Invalid Robot ID"}), 400
+
+    sim.robots.remove(robot)
+    return json_response({"message": f"Robot {robot_id} deleted successfully.", "robot_count": len(sim.robots)})
+
+
+# Simulation
+@app.route("/api/sim/reset", methods=["POST"])
+def reset_simulation():
+    """
+    Resets the simulation to its initial state.
+    """
+    sim = Simulation()
+    return json_response({"message": "Simulation reset successfully."})
 
 
 if __name__ == "__main__":
