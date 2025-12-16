@@ -1,10 +1,14 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import * as THREE from 'three';
-import GLTFLoader from 'three/examples/jsm/loaders/GLTFLoader';
+// import GLTFLoader from 'three/examples/jsm/loaders/GLTFLoader';
+import { RobotService, RobotStatus } from './robot.service';
 
 @Component({
   selector: 'app-robot-visualizer',
   standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './robot-visualizer.component.html',
   styleUrls: ['./robot-visualizer.component.css']
 })
@@ -25,11 +29,20 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
   private flashEnabled = false;
   private lastToggleTime = 0;
   private lightsOn = false;
+  public robotId = 0;
+  public robotStatus: RobotStatus | null = null;
+  public loading = false;
+  public error: string | null = null;
+
+  constructor(private robotService: RobotService) {}
 
   ngAfterViewInit(): void {
     this.initThree();
     this.startAnimationLoop();
     window.addEventListener('resize', this.onWindowResize);
+
+    // Optionally load initial robot status (id 0)
+    this.loadRobotStatus();
   }
 
   ngOnDestroy(): void {
@@ -39,6 +52,56 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
     }
     this.renderer?.dispose();
     this.controls?.dispose && this.controls.dispose();
+  }
+
+  public loadRobotStatus(id: number = this.robotId, allowCreate: boolean = true): void {
+    this.loading = true;
+    this.error = null;
+    this.robotService.getRobotStatus(id).subscribe({
+      next: (resp) => {
+        if (resp.error) {
+          // if none exists or out of range, create and retry once
+          if (allowCreate && (resp.error.includes('No robots available') || resp.error.includes('out of range'))) {
+            this.createAndReload();
+            return;
+          }
+          this.robotStatus = null;
+          this.error = resp.error;
+        } else if (resp.status) {
+          this.robotStatus = resp.status;
+        } else {
+          this.robotStatus = null;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        // Try to read backend-provided error message
+        const backendMsg: string | undefined = err?.error?.error || err?.error?.message;
+        if (
+          allowCreate && backendMsg && (backendMsg.includes('No robots available') || backendMsg.includes('out of range'))
+        ) {
+          this.createAndReload();
+          return;
+        }
+        this.loading = false;
+        this.robotStatus = null;
+        this.error = backendMsg || (err?.message) || 'Unbekannter Fehler beim Laden des Roboters.';
+      }
+    });
+  }
+
+  private createAndReload(): void {
+    this.robotService.createRobot().subscribe({
+      next: (res) => {
+        this.robotId = typeof res?.robot_id === 'number' ? res.robot_id : 0;
+        // retry load once without creating again
+        this.loadRobotStatus(this.robotId, false);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.error || err?.message || 'Roboter konnte nicht erstellt werden.';
+      }
+    });
   }
 
   private async initThree() {
@@ -63,7 +126,7 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
 
     // OrbitControls (dynamically imported so example module is loaded at runtime)
     try {
-      const orbitModule = await import('three/examples/jsm/controls/OrbitControls');
+      const orbitModule = await import('three/examples/jsm/controls/OrbitControls.js');
       const OrbitControlsClass = (orbitModule as any).OrbitControls;
       this.controls = new OrbitControlsClass(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
@@ -91,7 +154,7 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
     this.scene.add(grid);
     grid.position.y = -1;
 
-    const gltfModule = await import('three/examples/jsm/loaders/GLTFLoader');
+    const gltfModule = await import('three/examples/jsm/loaders/GLTFLoader.js');
 
     const GLTFLoaderClass = (gltfModule as any).GLTFLoader;
     const RobotLoader = new GLTFLoaderClass();
@@ -194,17 +257,105 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  private batteryStatus() {
+    if (!this.robotStatus?.battery_status) return;
+    // Could visualize battery level (e.g., change LED color based on level)
+    // For now, just log or store for UI display
+  }
+
+  private isCharging() {
+    if (!this.robotStatus?.is_charging) return;
+    // Visual indicator: could pulse lights or change color
+    // Example: set LED to green when charging
+    if (this.lightMeshes.length > 0) {
+      const chargingColor = new THREE.Color(0x00ff00); // green
+      this.lightMeshes.forEach(mesh => {
+        const mat: any = mesh.material;
+        if (mat && mat.emissive && !this.flashEnabled) {
+          mat.emissive.copy(chargingColor);
+          mat.needsUpdate = true;
+        }
+      });
+    }
+  }
+
+  private isDoorOpened() {
+    if (!this.robotStatus?.is_door_opened) return;
+    // Could trigger door animation or visual cue
+    // For now, just a placeholder for future door mechanics
+  }
+
+  private isParked() {
+    if (!this.robotStatus?.is_parked) return;
+    // Show tram when robot is parked (as if it's at a tram stop)
+    this.ToggleTramModel(true);
+  }
+
+  private isReversing() {
+    if (!this.robotStatus?.is_reversing) return;
+    // Enable flashing lights when reversing
+    if (!this.flashEnabled) {
+      this.flashEnabled = true;
+      this.lastToggleTime = 0;
+    }
+  }
+
+  private message() {
+    if (!this.robotStatus?.message) return;
+    // Message is already displayed in the UI via robotStatus
+    // Could add console log for debugging
+    // console.log('Robot message:', this.robotStatus.message);
+  }
+
+  private packages() {
+    if (!this.robotStatus?.packages || this.robotStatus.packages.length === 0) return;
+    // Could visualize package count or details
+  }
+
+  private applyStatusVisuals() {
+    if (!this.robotStatus) return;
+
+    // Reset visuals first
+    if (!this.robotStatus.is_reversing && this.flashEnabled) {
+      this.flashEnabled = false;
+      const offColor = new THREE.Color(0x000000);
+      this.lightMeshes.forEach(mesh => {
+        const mat: any = mesh.material;
+        if (mat && mat.emissive) {
+          mat.emissive.copy(offColor);
+          mat.needsUpdate = true;
+        }
+      });
+    }
+
+    if (!this.robotStatus.is_parked) {
+      this.ToggleTramModel(false);
+    }
+
+    // Apply status-driven visuals
+    this.batteryStatus();
+    this.isCharging();
+    this.isDoorOpened();
+    this.isParked();
+    this.isReversing();
+    this.message();
+    this.packages();
+  }
+
   private startAnimationLoop = () => {
     this.frameId = requestAnimationFrame(this.startAnimationLoop);
 
     // Update controls (if available)
     this.controls?.update && this.controls.update();
 
-    // Render
-    this.renderer.render(this.scene, this.camera);
+    // Apply robot status-driven visuals
+    this.applyStatusVisuals();
 
     // call flashing each frame
     this.applyLightFlashing();
+
+    // Render
+    this.renderer.render(this.scene, this.camera);
   };
 
   private onWindowResize = () => {

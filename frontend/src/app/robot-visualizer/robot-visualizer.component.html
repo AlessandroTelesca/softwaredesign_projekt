@@ -5,5 +5,15 @@
     <button type="button" (click)="ToggleTramModel()">Toggle Tram</button>
 
 
+  <div style="margin: 8px 0; display: flex; gap: 8px; align-items: center;">
+    <label>Robot ID:</label>
+    <input type="number" [(ngModel)]="robotId" style="width: 80px;" />
+    <button type="button" (click)="loadRobotStatus(robotId)">Load Status</button>
+    <span *ngIf="loading">Loading…</span>
+  </div>
+
+  <pre *ngIf="robotStatus" style="background:#f7f7f7; padding:8px; max-width: 520px; overflow:auto;">{{ robotStatus | json }}</pre>
+  <div *ngIf="error" style="color:#b00020">{{ error }}</div>
+
   <div #canvasContainer class="visualizer-container"></div>
 </div>
