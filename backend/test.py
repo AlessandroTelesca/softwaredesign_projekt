@@ -1,9 +1,15 @@
 """
 TODO: Docstring
 """
+import json
 import unittest
 import requests
 from app import json_response
+
+
+def battery_status_print(battery_status, input: str):
+    print(f"input:{input}response:{battery_status}")
+
 
 class TestAPIModule(unittest.TestCase):
     """
@@ -38,10 +44,11 @@ class TestAPIModule(unittest.TestCase):
         """
         TODO: Docstring
         """
-        url = "http://localhost:5000/api/robot/create?battery_status=40"
+        input = "40"
+        url = f"http://localhost:5000/api/robot/create?battery_status={input}"
         response = requests.get(url)
         battery_status = response.json()["status"]["battery_status"]
-        print(f"Request with battery_status='100' returned battery_status: {battery_status}")
+        battery_status_print(battery_status, input)
 
     def test_negative_battery_status(self):
         url = "http://localhost:5000/api/robot/create?battery_status=-10"
