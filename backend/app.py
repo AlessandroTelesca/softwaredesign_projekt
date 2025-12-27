@@ -72,7 +72,7 @@ def api_map():
 
 
 # Robot
-@app.route("/api/robot/create", methods=["GET", "POST"])
+@app.route("/api/robot/create", methods=["POST"])
 def create_new_robot():
     """
     Creates a new robot with parameters from the request arguments.
@@ -133,6 +133,14 @@ def get_robot_status(robot_id: int):
     return json_response({"robot_id": robot_id, "status": status})
 
 
+@app.route("/api/robot/update/<int:robot_id>", methods=["POST"])
+def update_robot_status(robot_id: int):
+    """
+    TODO: Docstring
+    """
+    pass
+
+
 @app.route("/api/robot/delete/<int:robot_id>", methods=["POST"])
 def delete_robot(robot_id: int):
     """
@@ -159,6 +167,14 @@ def reset_simulation():
     """
     sim = Simulation()
     return json_response({"message": "Simulation reset successfully."})
+
+
+@app.route("/api/sim/heartbeat", methods=["GET"])
+def heartbeat():
+    """
+    TODO: Docstring.
+    """
+    pass
 
 
 if __name__ == "__main__":

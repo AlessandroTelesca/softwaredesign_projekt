@@ -54,7 +54,9 @@ TODO
 ### Simulation
 Simulation (number of robots, packages, etc.) is tracked within runtime code. 
 #### /api/sim/reset
-`/api/robot/delete/<int::robot_id>` _/ POST_ resets the simulation; removes all robots and packages.
+`/api/sim/reset` _/ POST_ resets the simulation; removes all robots and packages.
+#### /api/sim/heartbeat
+`/api/sim/heartbeat` _/ GET_ is a heartbeat monitor; tracks new happenings since the last heartbeat call.
    
 ## Python Virtual Environment
 Get Python virtual environment and install dependencies.  
@@ -68,5 +70,6 @@ Start web app inside frontend/. `ng serve --open --port 8080`
 ## Sources
 [Build a CRUD App with Python, Flask, and Angular](https://developer.okta.com/blog/2019/03/25/build-crud-app-with-python-flask-angular)  
 [Open Street Map using OSMNX: how to retrieve the Hannover subway network?](https://stackoverflow.com/questions/62067243/open-street-map-using-osmnx-how-to-retrieve-the-hannover-subway-network)  
-[GeoJSON](https://geojson.io/#map=9.2/48.9302/8.5221)
+[GeoJSON](https://geojson.io/#map=9.2/48.9302/8.5221)  
+[How To Structure a Large Flask Application-Best Practices for 2025](https://dev.to/gajanan0707/how-to-structure-a-large-flask-application-best-practices-for-2025-9j2)
 

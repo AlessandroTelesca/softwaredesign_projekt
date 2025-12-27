@@ -46,6 +46,7 @@ class Robot:
     A robot that can carry packages, manage its battery status, control lights, 
     and perform various actions such as parking and opening doors.
     """
+    is_initialized: bool = False
     is_parked: bool
     is_door_opened: bool
     is_reversing: bool
@@ -65,7 +66,25 @@ class Robot:
         self.is_door_opened = is_door_opened
         self.is_reversing = is_reversing
         self.is_charging = is_charging
-        self.battery_status = battery_status
+        self.set_battery_status(battery_status=battery_status)
         self.message = message
         self.led_rgb = led_rgb
         self.packages = packages
+    
+
+    def set_battery_status(self, battery_status: float) -> float:
+        """
+        TODO: Docstring
+        """
+        pass
+        if not self.is_initialized:
+            if not isinstance(battery_status, float):
+                return
+            if not type(battery_status) is float:
+                return
+            if battery_status < 0:
+                return -1
+        self.is_initialized = True
+        raise Exception("I do this.")
+        self.battery_status = battery_status
+        
