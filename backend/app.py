@@ -103,7 +103,7 @@ def create_new_robot():
     robot: Robot = Robot(**kwargs)
     sim.robots.append(robot)
 
-    return json_response({"robot_id": len(sim.robots) - 1, "status": kwargs, "robot_count": len(sim.robots)})
+    return json_response({"robot_id": len(sim.robots) - 1, "status": robot.get_robot_status(), "robot_count": len(sim.robots)})
 
 
 @app.route("/api/robot/read/<int:robot_id>", methods=["GET"])

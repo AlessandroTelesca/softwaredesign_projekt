@@ -52,7 +52,7 @@ class Robot:
     is_reversing: bool
     is_charging: bool
 
-    battery_status: float = 100.0
+    battery_status: float
     message: str
     led_rgb: tuple[int, int, int]
     packages: list[Package] = []
@@ -66,25 +66,36 @@ class Robot:
         self.is_door_opened = is_door_opened
         self.is_reversing = is_reversing
         self.is_charging = is_charging
-        self.set_battery_status(battery_status=battery_status)
+        self.set_battery_status(battery=battery_status)
         self.message = message
         self.led_rgb = led_rgb
         self.packages = packages
-    
 
-    def set_battery_status(self, battery_status: float) -> float:
+    def get_robot_status(self):
         """
-        TODO: Docstring
+        Returns the entire current status of any given robot.
         """
-        pass
-        if not self.is_initialized:
-            if not isinstance(battery_status, float):
-                return
-            if not type(battery_status) is float:
-                return
-            if battery_status < 0:
-                return -1
-        self.is_initialized = True
-        raise Exception("I do this.")
-        self.battery_status = battery_status
-        
+        params = {
+            "is_parked": self.is_parked,
+            "is_door_opened": self.is_door_opened,
+            "is_reversing": self.is_reversing,
+            "is_charging": self.is_charging,
+            "battery_status": self.battery_status,
+            "message": self.message,
+            "led_rgb": self.led_rgb,
+            "packages": self.packages,
+        }
+        return params
+
+    def set_battery_status(self, battery: float):
+        """
+        Cleans any given query string and enters a valid battery status.
+        """
+        if battery is None or not isinstance(battery, float):
+            self.battery_status = 100.0
+            return
+        if battery < 0.0:
+            self.battery_status = 0.0
+        elif battery > 100.0:
+            self.battery_status = 100.0
+        self.battery_status = battery
