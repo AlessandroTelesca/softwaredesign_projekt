@@ -63,6 +63,9 @@ class TestAPIModule(unittest.TestCase):
                 "status"]["battery_status"]
             self.assertEqual(str_response.status_code, 200)
             self.assertIsInstance(battery_status, float)
+            if isinstance(validity_check[i], (int, float)) and validity_check[i] >= 0.0 and validity_check[i] <= 100.0:
+                self.assertTrue(
+                    battery_status == validity_check[i], f"{battery_status} is not {validity_check[i]}")
             self.assertTrue(battery_status >= 0.0 and battery_status <= 100.0)
 
 
