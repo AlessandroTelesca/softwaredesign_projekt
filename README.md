@@ -14,6 +14,11 @@ Debug Mode: `flask --app backend/app.py run --debug`
 Open: http://127.0.0.1:5000  
 Debug mode enables on-the-fly changes to the app as well as additional logging statements through Flask.logger.info(). 
 
+### Python Virtual Environment
+Get Python virtual environment and install dependencies.  
+Install dependencies: `pip install -r requirements.txt`  
+Add new module dependencies: `pip freeze > requirements.txt`  
+
 ## Middleware API
 The API is called through either POST, or GET requests.  
 Below is a documentation of the possible interactions with the frontend.
@@ -49,22 +54,56 @@ TODO
 `/api/robot/delete/<int:robot_id>` _/ POST_ deletes a specified robot by its ID.
 
 ### Packages
-TODO
+To handle packages, there must at least be one robot in the simulation.  
+Packages are assigned to a robot; any robot can have a maximum of eight packages (two large, eight small).  
+Start defaults to Karlsruhe Hauptbahnhof; destination to Karlsruhe Durlach Bahnhof.
+#### /api/pkg/create
+`/api/pkg/create` _/ POST_ creates a new package and assigns it to a robot with a given ID.  
+```
+robot_id: int
+start: str
+destination: str
+size: PackageSize[SMALL, LARGE]
+```
 
 ### Simulation
 Simulation (number of robots, packages, etc.) is tracked within runtime code. 
 #### /api/sim/reset
 `/api/sim/reset` _/ POST_ resets the simulation; removes all robots and packages.
-#### /api/sim/heartbeat
+#### /api/sim/heartbeat TODO
 `/api/sim/heartbeat` _/ GET_ is a heartbeat monitor; tracks new happenings since the last heartbeat call.
    
-## Python Virtual Environment
-Get Python virtual environment and install dependencies.  
-Install dependencies: `pip install -r requirements.txt`  
-Add new module dependencies: `pip freeze > requirements.txt`  
 
 ## Frontend
-TODO: DOC  
+### Install
+
+- From the repository root, install frontend dependencies by running:
+
+```powershell
+cd frontend; npm install
+```
+
+### Start
+
+- Start the backend (run `app.py` from the `backend` folder):
+
+```powershell
+cd backend; python app.py
+```
+
+- Start the frontend (from the `frontend` folder):
+
+```powershell
+cd frontend; npm start
+```
+
+- After the frontend starts a browser will open itself with to tabs.
+    if not: open your browser at `http://localhost:4200/map` and `http://localhost:4200/robot`.
+
+### Notes
+
+- Ensure the backend is running and its URL is configured in `src/app/env.ts` if needed.
+- If `npm start` is not defined, `npm run start` or `ng serve` can be used instead.
 Start web app inside frontend/. `ng serve --open --port 8080`
 
 ## Sources

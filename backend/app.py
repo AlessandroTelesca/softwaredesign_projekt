@@ -7,7 +7,7 @@ from flask import Flask, json, render_template_string, request
 from flask_cors import CORS
 
 from robot import Robot, Movement, Location, StatusLED
-from packages import Package, PackageSize
+from packages import PackageSize
 from simulation import Simulation
 from geography import Map
 
@@ -141,6 +141,8 @@ def update_robot_status(robot_id: int):
     pass
 
 
+
+
 @app.route("/api/robot/delete/<int:robot_id>", methods=["POST"])
 def delete_robot(robot_id: int):
     """
@@ -157,6 +159,26 @@ def delete_robot(robot_id: int):
 
     sim.robots.remove(robot)
     return json_response({"message": f"Robot {robot_id} deleted successfully.", "robot_count": len(sim.robots)})
+
+
+# Packages
+@app.route("/api/pkg/create", methods=["POST"])
+def create_package(robot_id: int, pkg_size: PackageSize, start: str, destination: str):
+    """
+    Creates a small or large package and assigns it to a robot with a given ID. 
+    Does not do anything if it exceeds max package size.
+    """
+    if len(sim.robots) == 0:
+        return json_response({"error": "No robots available"}), 404
+    try:
+        robot = sim.robots[robot_id]
+    except IndexError:
+        return json_response({"error": "Robot ID out of range"}), 404
+    except TypeError:
+        return json_response({"error": "Invalid Robot ID"}), 400
+    robot.add_new_package(size=pkg_size, start=start, destination=destination)
+    sim.robots[robot_id] = robot
+    return json_response({"message": f"{pkg_size.name} Package added to Robot {robot_id}. {len(robot._packages)}", "robot_count": len(sim.robots)})
 
 
 # Simulation

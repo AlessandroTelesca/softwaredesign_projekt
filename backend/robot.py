@@ -2,8 +2,12 @@
 TODO: Docstring
 """
 from enum import Enum
-from packages import Package
+from packages import Package, PackageSize
 from setuptools._distutils.util import strtobool
+
+MAX_NUM_OF_PACKAGES: int = 8
+MAX_NUM_OF_LARGE_PACKAGES: int = 2
+MAX_NUM_OF_SMALL_PACKAGES: int = 6
 
 
 class Movement(Enum):
@@ -157,3 +161,24 @@ class Robot:
             self._battery_status = max(0.0, min(battery, 100.0))
         except (TypeError, ValueError):
             self._battery_status = 100.0
+
+    ########################################################################################
+    # Packages                                                                             #
+    ########################################################################################
+    def add_new_package(self, size: PackageSize, start: str, destination: str):
+        """
+        TODO: Docstring
+        """
+        if len(self._packages) >= MAX_NUM_OF_PACKAGES:
+            return
+        amount_small_packages: int = sum(
+            1 for package in self._packages if package.size == PackageSize.SMALL)
+        amount_large_packages: int = sum(
+            1 for package in self._packages if package.size == PackageSize.LARGE)
+
+        if size is PackageSize.SMALL and amount_small_packages >= MAX_NUM_OF_SMALL_PACKAGES:
+            return
+        if size is PackageSize.LARGE and amount_large_packages >= MAX_NUM_OF_SMALL_PACKAGES:
+            return
+        pkg = Package(start=start, destination=destination, size=size)
+        self._packages.append(pkg)

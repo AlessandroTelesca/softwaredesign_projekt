@@ -3,21 +3,53 @@ TODO
 """
 from enum import Enum
 
+STD_START: str = "Karlsruhe Hauptbahnhof, Germany"
+STD_DESTINATION: str = "Karlsruhe Durlach Bahnhof, Germany"
+
 class PackageSize(Enum):
     """
     TODO: Docstring
     """
     SMALL = 0
-    MEDIUM = 1
-    LARGE = 2
+    LARGE = 1
 
 
 class Package:
     """
     TODO: Docstring
     """
-    def __init__(self):
+    _start: str
+    _destination: str
+    _size: PackageSize
+
+    def __init__(self, start: str, destination:  str, size: str):
         """
         TODO: Docstring
         """
-        pass
+        self._start = start
+        self._destination = destination
+        self._size = size
+
+    @property
+    def start(self) -> str:
+        return self._start
+    
+    @start.setter
+    def start(self, value):
+        self._start = value
+    
+    @property
+    def destination(self) -> str:
+        return self._start
+    
+    @destination.setter
+    def destination(self, value):
+        self._destination = value
+    
+    @property
+    def size(self) -> PackageSize:
+        return self._size
+    
+    @size.setter
+    def size(self, value):
+        self._size = value
