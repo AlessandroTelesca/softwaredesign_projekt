@@ -3,6 +3,7 @@ TODO: Docstring
 """
 from enum import Enum
 from packages import Package
+from setuptools._distutils.util import strtobool
 
 
 class Movement(Enum):
@@ -45,45 +46,104 @@ class Robot:
     """
     A robot that can carry packages, manage its battery status, control lights, 
     and perform various actions such as parking and opening doors.
+    The attributes of this robot are private, but can be interacted with using setter/getter methods.
     """
-    is_initialized: bool = False
-    is_parked: bool
-    is_door_opened: bool
-    is_reversing: bool
-    is_charging: bool
+    _is_charging: bool
+    _is_door_opened: bool
+    _is_parked: bool
+    _is_reversing: bool
 
-    battery_status: float
-    message: str
-    led_rgb: tuple[int, int, int]
-    packages: list[Package] = []
+    _battery_status: float
+    _message: str
+    _led_rgb: tuple[int, int, int]
+    _packages: list[Package] = []
 
     def __init__(self, is_parked, is_door_opened,
                  is_reversing: bool,
                  is_charging: bool, battery_status: float,
                  message: str, led_rgb: tuple[int, int, int],
                  packages: list[Package]):
-        self.is_parked = is_parked
-        self.is_door_opened = is_door_opened
-        self.is_reversing = is_reversing
-        self.is_charging = is_charging
+        self._is_parked = is_parked
+        self._is_door_opened = is_door_opened
+        self._is_reversing = is_reversing
+        self._is_charging = is_charging
         self.set_battery_status(battery=battery_status)
-        self.message = message
-        self.led_rgb = led_rgb
-        self.packages = packages
+        self._message = message
+        self._led_rgb = led_rgb
+        self._packages = packages
+
+    ########################################################################################
+    # Setters/Getters                                                                      #
+    ########################################################################################
+    @property
+    def is_charging(self) -> bool:
+        return self._is_charging
+
+    @is_charging.setter
+    def is_charging(self, value):
+        try:
+            is_charging = strtobool(value)
+            self._is_charging = is_charging
+        except AttributeError:
+            self._is_charging = bool(value)
+        except ValueError:
+            self._is_charging = False
+
+    @property
+    def is_door_opened(self) -> bool:
+        return self._is_door_opened
+
+    @is_door_opened.setter
+    def is_door_opened(self, value):
+        try:
+            is_door_opened = strtobool(value)
+            self._is_door_opened = is_door_opened
+        except AttributeError:
+            self._is_door_opened = bool(value)
+        except ValueError:
+            self._is_door_opened = False
+
+    @property
+    def is_parked(self) -> bool:
+        return self._is_parked
+
+    @is_parked.setter
+    def is_parked(self, value):
+        try:
+            is_parked = strtobool(value)
+            self._is_parked = is_parked
+        except AttributeError:
+            self._is_parked = bool(value)
+        except ValueError:
+            self._is_parked = False
+
+    @property
+    def is_reversing(self) -> bool:
+        return self._is_reversing
+
+    @is_reversing.setter
+    def is_reversing(self, value):
+        try:
+            is_reversing = strtobool(value)
+            self._is_reversing = is_reversing
+        except AttributeError:
+            self._is_reversing = bool(value)
+        except ValueError:
+            self._is_reversing = False
 
     def get_robot_status(self):
         """
         Returns the entire current status of any given robot.
         """
         params = {
-            "is_parked": self.is_parked,
-            "is_door_opened": self.is_door_opened,
-            "is_reversing": self.is_reversing,
-            "is_charging": self.is_charging,
-            "battery_status": self.battery_status,
-            "message": self.message,
-            "led_rgb": self.led_rgb,
-            "packages": self.packages,
+            "is_parked": self._is_parked,
+            "is_door_opened": self._is_door_opened,
+            "is_reversing": self._is_reversing,
+            "is_charging": self._is_charging,
+            "battery_status": self._battery_status,
+            "message": self._message,
+            "led_rgb": self._led_rgb,
+            "packages": self._packages,
         }
         return params
 
@@ -91,8 +151,9 @@ class Robot:
         """
         Cleans any given query string and returns a valid battery status (between 0.0 - 100.0 %).
         """
+        # TODO: Rewrite this in accord with the other setter/getter methods.
         try:
             battery = float(battery)
-            self.battery_status = max(0.0, min(battery, 100.0))
+            self._battery_status = max(0.0, min(battery, 100.0))
         except (TypeError, ValueError):
-            self.battery_status = 100.0
+            self._battery_status = 100.0

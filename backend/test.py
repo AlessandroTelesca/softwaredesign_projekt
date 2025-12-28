@@ -34,7 +34,6 @@ class TestAPIModule(unittest.TestCase):
     Robot testing: Creation without parameters; creation with strings in battery status.
     TODO: Add more tests.
     """
-
     def test_get_request(self):
         """
         This tests if a get request is possible by calling the Hello, World function from the middleware.
