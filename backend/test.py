@@ -1,5 +1,10 @@
 """
-TODO: Docstring
+Unit tests for the API middleware.
+
+This module tests the API endpoints and functionalities, including:
+- GET and POST request handling
+- Robot creation and validation
+- Battery status validation
 """
 import unittest
 import requests
@@ -8,19 +13,19 @@ from app import json_response
 URL: str = "http://localhost:5000/api"
 
 
-def get_request(query: str, params=None) -> dict:
+def get_request(query: str, params=None) -> requests.Response:
     """
     Sends a GET request with the given parameters.
     query: The GET request query; requires a / at the start.
     """
-    return requests.get(URL + query, params)
+    return requests.get(URL + query, params=params)
 
 
-def post_request(query: str, params=None):
+def post_request(query: str, params=None) -> requests.Response:
     """
     Sends a POST request with the given parameters.
     """
-    return requests.post(URL + query, params)
+    return requests.post(URL + query, params=params)
 
 
 class TestAPIModule(unittest.TestCase):
@@ -51,22 +56,32 @@ class TestAPIModule(unittest.TestCase):
 
     def test_valid_battery_status(self):
         """
-        Checks if the query parameters for the battery status are valid (e.g. is float; not <0.0, not >100.0)
+        Checks if the query parameters for the battery status are valid (e.g. is float or int; not <0.0, not >100.0).
         """
-        validity_check = ["abc", 53, 3.14, -3.0, 101.0]
+        test_cases: list = ["abc", 53, 3.14, -3.0, 101.0]
 
-        for i in range(len(validity_check)):
+        for test_value in test_cases:
+            # Send POST request.
             str_response = post_request(
-                "/robot/create", params={"battery_status": validity_check[i]}
+                "/robot/create", params={"battery_status": test_value}
             )
             battery_status = str_response.json()[
                 "status"]["battery_status"]
+
+            # Check if POST request was acknowledged.
             self.assertEqual(str_response.status_code, 200)
             self.assertIsInstance(battery_status, float)
-            if isinstance(validity_check[i], (int, float)) and validity_check[i] >= 0.0 and validity_check[i] <= 100.0:
-                self.assertTrue(
-                    battery_status == validity_check[i], f"{battery_status} is not {validity_check[i]}")
-            self.assertTrue(battery_status >= 0.0 and battery_status <= 100.0)
+
+            # Checks if given test case was valid input to begin with.
+            is_valid_input: bool = (
+                isinstance(test_value, (int, float))
+                and 0.0 <= test_value <= 100.0
+            )
+            if is_valid_input:
+                self.assertEqual(
+                    battery_status, test_value, f"Expected: {test_value} | Result: {battery_status}")
+
+            self.assertTrue(0.0 <= battery_status <= 100.0)
 
 
 if __name__ == "__main__":

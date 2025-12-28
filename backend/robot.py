@@ -89,13 +89,10 @@ class Robot:
 
     def set_battery_status(self, battery: float):
         """
-        Cleans any given query string and enters a valid battery status.
+        Cleans any given query string and returns a valid battery status (between 0.0 - 100.0 %).
         """
-        if battery is None or not isinstance(battery, float):
+        try:
+            battery = float(battery)
+            self.battery_status = max(0.0, min(battery, 100.0))
+        except (TypeError, ValueError):
             self.battery_status = 100.0
-            return
-        if battery < 0.0:
-            self.battery_status = 0.0
-        elif battery > 100.0:
-            self.battery_status = 100.0
-        self.battery_status = battery
