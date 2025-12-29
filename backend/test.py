@@ -8,7 +8,6 @@ This module tests the API endpoints and functionalities, including:
 """
 import unittest
 import requests
-from app import json_response
 
 URL: str = "http://localhost:5000/api"
 

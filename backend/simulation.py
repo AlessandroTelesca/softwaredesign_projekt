@@ -2,7 +2,7 @@
 Singleton for the Flask backend.
 Provides a global Simulation instance.
 """
-from robot import Robot
+from backend.robot import Robot
 from datetime import date, time
 
 class Simulation:

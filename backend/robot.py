@@ -2,7 +2,7 @@
 TODO: Docstring
 """
 from enum import Enum
-from packages import Package, PackageSize
+from backend.packages import Package, PackageSize
 from setuptools._distutils.util import strtobool
 
 MAX_NUM_OF_PACKAGES: int = 8

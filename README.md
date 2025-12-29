@@ -70,6 +70,8 @@ size: PackageSize[SMALL, LARGE]
 Simulation (number of robots, packages, etc.) is tracked within runtime code. 
 #### /api/sim/reset
 `/api/sim/reset` _/ POST_ resets the simulation; removes all robots and packages.
+#### /api/sim/time  
+`/api/sim/time` _/ GET_ checks the current datetime within the simulation. This isn't necessarily the current real time.  
 #### /api/sim/heartbeat TODO
 `/api/sim/heartbeat` _/ GET_ is a heartbeat monitor; tracks new happenings since the last heartbeat call.
    
