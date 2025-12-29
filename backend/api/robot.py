@@ -1,13 +1,13 @@
 """
 API for managing robots within the simulation.
 """
-from . import json_response 
+from . import json_response
 from flask import g, Blueprint, request
 from backend.robot import Robot
-from backend.simulation import Simulation
 
 robot_crud = Blueprint("robot_api", __name__)
 endpoint = "/api/robot"
+
 
 @robot_crud.route(f"{endpoint}/create", methods=["POST"])
 def create_new_robot():
@@ -43,15 +43,15 @@ def create_new_robot():
     return json_response({"robot_id": len(g.sim.robots) - 1, "status": robot.get_robot_status(), "robot_count": len(g.sim.robots)})
 
 
-@robot_crud.route("/api/robot/read/<int:robot_id>", methods=["GET"])
+@robot_crud.route(f"{endpoint}/read/<int:robot_id>", methods=["GET"])
 def get_robot_status(robot_id: int):
     """
     Retrieves the status of a specific robot by its ID.
     """
-    if len(sim.robots) == 0:
+    if len(g.sim.robots) == 0:
         return json_response({"error": "No robots available"}), 404
     try:
-        robot = sim.robots[robot_id]
+        robot = g.sim.robots[robot_id]
     except IndexError:
         return json_response({"error": "Robot ID out of range"}), 404
     except TypeError:
@@ -78,21 +78,19 @@ def update_robot_status(robot_id: int):
     pass
 
 
-
-
 @robot_crud.route("/api/robot/delete/<int:robot_id>", methods=["POST"])
 def delete_robot(robot_id: int):
     """
     Deletes a robot by its ID.
     """
-    if len(sim.robots) == 0:
+    if len(g.sim.robots) == 0:
         return json_response({"error": "No robots available"}), 404
     try:
-        robot = sim.robots[robot_id]
+        robot = g.sim.robots[robot_id]
     except IndexError:
         return json_response({"error": "Robot ID out of range"}), 404
     except TypeError:
         return json_response({"error": "Invalid Robot ID"}), 400
 
-    sim.robots.remove(robot)
-    return json_response({"message": f"Robot {robot_id} deleted successfully.", "robot_count": len(sim.robots)})
+    g.sim.robots.remove(robot)
+    return json_response({"message": f"Robot {robot_id} deleted successfully.", "robot_count": len(g.sim.robots)})

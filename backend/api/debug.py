@@ -1,11 +1,12 @@
 """
 API for basic debugging purposes.
 """
-from . import json_response 
+from . import json_response
 from flask import Blueprint, render_template_string
-from ..geography import Map
+from backend.geography import Map
 
 debug = Blueprint("debug", __name__)
+
 
 @debug.route("/")
 def map():
@@ -15,6 +16,7 @@ def map():
     web_map = Map(start="Karlsruhe Hauptbahnhof, Germany",
                   end="Karlsruhe Durlach Bahnhof, Germany").to_html()
     return render_template_string(web_map)
+
 
 @debug.route("/api/hello", methods=["GET"])
 def api_hello():
