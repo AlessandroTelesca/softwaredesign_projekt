@@ -2,8 +2,8 @@
 Singleton for the Flask backend.
 Provides a global Simulation instance.
 """
-from backend.robot import Robot
 from datetime import date, time
+from backend.robot import Robot
 
 
 class Simulation:
@@ -25,3 +25,8 @@ class Simulation:
         self.current_time = current_time
         self.robots = robots
         self.time_per_tick = time_per_tick
+
+    def __str__(self) -> str:
+        string = f"Date: {self.current_date} | Time: {self.current_time} | Time Per Tick: {
+            self.time_per_tick} | Amount of Robots: {len(self.robots)}"
+        return string

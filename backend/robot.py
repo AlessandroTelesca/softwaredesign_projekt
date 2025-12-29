@@ -50,12 +50,14 @@ class Robot:
     """
     A robot that can carry packages, manage its battery status, control lights, 
     and perform various actions such as parking and opening doors.
-    The attributes of this robot are private, but can be interacted with using setter/getter methods.
+    The attributes of this robot are private, but can be interacted with setter/getter methods.
     """
     _is_charging: bool
     _is_door_opened: bool
     _is_parked: bool
     _is_reversing: bool
+    _status: dict[bool] = {"is_charging": False,
+                           "is_door_opened": False, "is_parked": False, "is_reversing": False}
 
     _battery_status: float
     _message: str
@@ -76,9 +78,31 @@ class Robot:
         self._led_rgb = led_rgb
         self._packages = packages
 
+    def __str__(self) -> str:
+        # TODO: Good overview string of Robot instance
+        return f"Robot | Amount of Packages: {len(self._packages)} | Status: {self.status} | Packages: {self._packages}"
+
     ########################################################################################
     # Setters/Getters                                                                      #
     ########################################################################################
+    @property
+    def status(self) -> dict[bool]:
+        return self._status
+
+    @status.setter
+    # def status(self, is_charging: bool = None, is_door_opened: bool = None, is_parked: bool = None,  is_reversing: bool = None):
+    def status(self, **kwargs):
+        """
+        TODO: Docstring
+        """
+        for key, value in kwargs.items():
+            if key in ("is_charging", "is_door_opened", "is_parked", "is_reversing"):
+                try:
+                    setattr(self, f"_{key}", strtobool(value) if hasattr(
+                        strtobool, "__call__") else bool(value))
+                except (KeyError, ValueError):
+                    continue
+
     @property
     def is_charging(self) -> bool:
         return self._is_charging

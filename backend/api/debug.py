@@ -1,19 +1,16 @@
 """
 API for basic debugging purposes.
 """
-from flask import render_template_string
-from backend.geography import Map
+from flask import g, render_template
 from . import json_response, DEBUG_API
 
 
 @DEBUG_API.route("/")
-def api_map():
+def api_index():
     """
-    Fetches an interactive map of Karlsruhe's railways and displays it as an iframe.
+    Quick overview of the current Flask backend for debugging purposes.
     """
-    web_map = Map(start="Karlsruhe Hauptbahnhof, Germany",
-                  end="Karlsruhe Durlach Bahnhof, Germany").to_html()
-    return render_template_string(web_map)
+    return render_template("index.html", sim=g.sim)
 
 
 @DEBUG_API.route("/api/hello", methods=["GET"])

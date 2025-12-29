@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KVV Debug</title>
+</head>
+<body>
+    <h2>KVV App - Backend Debug Interface</h2>
+    Quick overview of the current Flask backend and middleware for debugging purposes.
+
+    <h3>Simulation:</h3>
+    {{ sim }}
+
+
+    <h3>Robots:</h3>
+    {% for robot in sim.robots %}
+        {{ robot }} <br>
+    {% endfor %}
+    <form action="{{ url_for('robot.create_new_robot')}}" method="POST">
+        <button type="submit">Create a New Robot</button>
+    </form>
+
+
+    <h3>Packages:</h3>
+    {% for robot in sim.robots %}
+    {{ robot.packages }}
+    {% endfor %}
+</body>
+</html>
