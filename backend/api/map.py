@@ -8,6 +8,7 @@ from backend.geography import Map
 map_api = Blueprint("map", __name__)
 endpoint = "/api/map"
 
+
 @map_api.route(endpoint, methods=["GET"])
 def api_map():
     """

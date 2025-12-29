@@ -6,6 +6,7 @@ from enum import Enum
 STD_START: str = "Karlsruhe Hauptbahnhof, Germany"
 STD_DESTINATION: str = "Karlsruhe Durlach Bahnhof, Germany"
 
+
 class PackageSize(Enum):
     """
     TODO: Docstring
@@ -33,23 +34,23 @@ class Package:
     @property
     def start(self) -> str:
         return self._start
-    
+
     @start.setter
     def start(self, value):
         self._start = value
-    
+
     @property
     def destination(self) -> str:
         return self._start
-    
+
     @destination.setter
     def destination(self, value):
         self._destination = value
-    
+
     @property
     def size(self) -> PackageSize:
         return self._size
-    
+
     @size.setter
     def size(self, value):
         self._size = value

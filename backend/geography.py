@@ -22,7 +22,7 @@ class Map:
     city: str = "Karlsruhe, Baden-Württemberg, Germany"
     start: str = "Karlsruhe Hauptbahnhof, Germany"
     end: str = "Karlsruhe Durlach Bahnhof, Germany"
-    
+
     def __init__(self, city: str = city, start: str = start, end: str = end):
         self.city = city
         self.start = start

@@ -8,6 +8,7 @@ from backend.simulation import Simulation
 sim_api = Blueprint("sim", __name__)
 endpoint = "/api/sim"
 
+
 @sim_api.route(f"{endpoint}/reset", methods=["POST"])
 def reset_simulation():
     """

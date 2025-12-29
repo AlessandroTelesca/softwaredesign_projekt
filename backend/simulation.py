@@ -5,6 +5,7 @@ Provides a global Simulation instance.
 from backend.robot import Robot
 from datetime import date, time
 
+
 class Simulation:
     """
     A simulation environment that holds multiple robots and manages the simulation time.
