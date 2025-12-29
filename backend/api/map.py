@@ -1,15 +1,13 @@
 """
 API for the map.
 """
-from . import json_response
-from flask import g, Blueprint, render_template_string
 from backend.geography import Map
+from . import json_response, MAP_API
 
-map_api = Blueprint("map", __name__)
-endpoint = "/api/map"
+END_POINT = "/api/map"
 
 
-@map_api.route(endpoint, methods=["GET"])
+@MAP_API.route(END_POINT, methods=["GET"])
 def api_map():
     """
     This creates an iframe of a map for the frontend.

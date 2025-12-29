@@ -1,15 +1,13 @@
 """
 API for basic debugging purposes.
 """
-from . import json_response
-from flask import Blueprint, render_template_string
+from flask import render_template_string
 from backend.geography import Map
+from . import json_response, DEBUG_API
 
-debug = Blueprint("debug", __name__)
 
-
-@debug.route("/")
-def map():
+@DEBUG_API.route("/")
+def api_map():
     """
     Fetches an interactive map of Karlsruhe's railways and displays it as an iframe.
     """
@@ -18,7 +16,7 @@ def map():
     return render_template_string(web_map)
 
 
-@debug.route("/api/hello", methods=["GET"])
+@DEBUG_API.route("/api/hello", methods=["GET"])
 def api_hello():
     """
     Simple endpoint for frontend connectivity test.
@@ -27,7 +25,7 @@ def api_hello():
     return json_response({"message": "Hello World"})
 
 
-@debug.route("/api/string/<text>", methods=["GET"])
+@DEBUG_API.route("/api/string/<text>", methods=["GET"])
 def api_string(text):
     """
     Returns any string the frontend sends.

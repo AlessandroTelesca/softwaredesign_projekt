@@ -1,15 +1,15 @@
 """
 API for the simulation.
 """
-from . import json_response
-from flask import g, Blueprint, render_template_string
+from flask import g
 from backend.simulation import Simulation
-
-sim_api = Blueprint("sim", __name__)
-endpoint = "/api/sim"
+from . import json_response, SIM_API
 
 
-@sim_api.route(f"{endpoint}/reset", methods=["POST"])
+END_POINT = "/api/sim"
+
+
+@SIM_API.route(f"{END_POINT}/reset", methods=["POST"])
 def reset_simulation():
     """
     Resets the simulation to its initial state.
@@ -18,9 +18,8 @@ def reset_simulation():
     return json_response({"message": "Simulation reset successfully."})
 
 
-@sim_api.route("/api/sim/heartbeat", methods=["GET"])
+@SIM_API.route("/api/sim/heartbeat", methods=["GET"])
 def heartbeat():
     """
     TODO: Docstring.
     """
-    pass

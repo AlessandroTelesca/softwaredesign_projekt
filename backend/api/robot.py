@@ -1,15 +1,15 @@
 """
 API for managing robots within the simulation.
 """
-from . import json_response
-from flask import g, Blueprint, request
+from flask import g, request
 from backend.robot import Robot
-
-robot_crud = Blueprint("robot_api", __name__)
-endpoint = "/api/robot"
+from . import json_response, ROBOT_API
 
 
-@robot_crud.route(f"{endpoint}/create", methods=["POST"])
+END_POINT = "/api/robot"
+
+
+@ROBOT_API.route(f"{END_POINT}/create", methods=["POST"])
 def create_new_robot():
     """
     Creates a new robot with parameters from the request arguments.
@@ -34,16 +34,17 @@ def create_new_robot():
                 case "battery_status":
                     kwargs[key] = request.args.get(key)
                 case "packages":
-                    kwargs[key] = []  # TODO: Parse packages from request
+                    kwargs[key] = []    # TODO: Parse packages from request
                 case _:
                     kwargs[key] = request.args.get(key)
     robot: Robot = Robot(**kwargs)
     g.sim.robots.append(robot)
 
-    return json_response({"robot_id": len(g.sim.robots) - 1, "status": robot.get_robot_status(), "robot_count": len(g.sim.robots)})
+    return json_response({"robot_id": len(g.sim.robots) - 1, "status": robot.get_robot_status(),
+                          "robot_count": len(g.sim.robots)})
 
 
-@robot_crud.route(f"{endpoint}/read/<int:robot_id>", methods=["GET"])
+@ROBOT_API.route(f"{END_POINT}/read/<int:robot_id>", methods=["GET"])
 def get_robot_status(robot_id: int):
     """
     Retrieves the status of a specific robot by its ID.
@@ -70,15 +71,14 @@ def get_robot_status(robot_id: int):
     return json_response({"robot_id": robot_id, "status": status})
 
 
-@robot_crud.route("/api/robot/update/<int:robot_id>", methods=["POST"])
+@ROBOT_API.route("/api/robot/update/<int:robot_id>", methods=["POST"])
 def update_robot_status(robot_id: int):
     """
     TODO: Docstring
     """
-    pass
 
 
-@robot_crud.route("/api/robot/delete/<int:robot_id>", methods=["POST"])
+@ROBOT_API.route("/api/robot/delete/<int:robot_id>", methods=["POST"])
 def delete_robot(robot_id: int):
     """
     Deletes a robot by its ID.
@@ -93,4 +93,5 @@ def delete_robot(robot_id: int):
         return json_response({"error": "Invalid Robot ID"}), 400
 
     g.sim.robots.remove(robot)
-    return json_response({"message": f"Robot {robot_id} deleted successfully.", "robot_count": len(g.sim.robots)})
+    return json_response({"message": f"Robot {robot_id} deleted successfully.",
+                          "robot_count": len(g.sim.robots)})

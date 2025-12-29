@@ -3,16 +3,16 @@ The backend.
 Provides API endpoints for the frontend to interact with the robot and map data.
 Includes Flask app configuration and route definitions.
 """
-from flask import Flask, Blueprint, json, g
+from flask import Flask, Blueprint, g
 from flask_cors import CORS
 
 from backend.simulation import Simulation
 
-from backend.api.debug import debug
-from backend.api.robot import robot_crud
-from backend.api.map import map_api
-from backend.api.pkg import pkg_api
-from backend.api.sim import sim_api
+from backend.api.debug import DEBUG_API
+from backend.api.robot import ROBOT_API
+from backend.api.map import MAP_API
+from backend.api.pkg import PKG_API
+from backend.api.sim import SIM_API
 
 
 #######################################################################################
@@ -31,17 +31,10 @@ def inject_singleton():
     g.sim = sim
 
 
-def json_response(payload: str) -> str:
-    """
-    Helper function to return a JSON response.
-    """
-    return json.dumps(payload)
-
-
 ########################################################################################
 # Middleware                                                                           #
 ########################################################################################
-middleware: list[Blueprint] = [debug, robot_crud, map_api, pkg_api, sim_api]
+middleware: list[Blueprint] = [DEBUG_API, ROBOT_API, MAP_API, PKG_API, SIM_API]
 with app.app_context():
     # Creates the middleware for all applications.
     # Files are stored within api/*.py.
