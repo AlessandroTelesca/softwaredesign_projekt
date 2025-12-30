@@ -16,7 +16,7 @@
         {{ robot }} <br>
     {% endfor %}
     <form action="{{ url_for('robot.create_new_robot')}}" method="POST">
-        <button type="submit">Create a New Robot</button>
+        <button type="submit">POST/ Create a New Robot</button>
     </form>
 
 
@@ -24,5 +24,20 @@
     {% for robot in sim.robots %}
     {{ robot.packages }}
     {% endfor %}
+    <form action="{{ url_for('package.create_new_pkg')}}" method="POST">
+        <label for="robot_id">Robot ID</label>
+        <input name="robot_id" id="robot_id "type="number">
+
+        <label for="pkg_size">Large Package Size</label>
+        <input name="pkg_size" id="pkg_size" type="number" value="1">
+
+        <label for="start">Start Point</label>
+        <input name="start" id="start "type="text" value="Karlsruhe Hauptbahnhof">
+
+        <label for="destination">Destination</label>
+        <input name="destination" id="destination "type="text" value="Karlsruhe Hauptbahnhof">
+
+        <button type="submit">POST/ Create a New Package</button>
+    </form>
 </body>
 </html>

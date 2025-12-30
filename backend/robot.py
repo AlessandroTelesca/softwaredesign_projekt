@@ -2,8 +2,9 @@
 TODO: Docstring
 """
 from enum import Enum
-from backend.packages import Package, PackageSize
 from setuptools._distutils.util import strtobool
+from backend.packages import Package, PackageSize
+
 
 MAX_NUM_OF_PACKAGES: int = 8
 MAX_NUM_OF_LARGE_PACKAGES: int = 2
@@ -14,8 +15,8 @@ class Movement(Enum):
     """
     TODO: Docstring
     """
-    NONE = 0,
-    LEFT = 1,
+    NONE = 0
+    LEFT = 1
     RIGHT = 2
 
 
@@ -23,8 +24,8 @@ class Location(Enum):
     """
     TODO: Docstring
     """
-    OUTSIDE = 0,
-    IN_ELEVATOR = 1,
+    OUTSIDE = 0
+    IN_ELEVATOR = 1
     INSIDE_TRAM = 2
 
 
@@ -32,17 +33,17 @@ class StatusLED(Enum):
     """
     TODO: Docstring
     """
-    ERROR = -1,
-    BOOTING = 0,
-    READY = 1,
-    WAITING = 2,
-    ALARM = 3,
-    HUMAN_INTERACTION = 4,
-    WORK_COMPLETED = 5,
-    REVERSING = 6,
-    PARKING = 7,
-    ERROR_INTERACTION = 8,
-    EMERGENCY = 9,
+    ERROR = -1
+    BOOTING = 0
+    READY = 1
+    WAITING = 2
+    ALARM = 3
+    HUMAN_INTERACTION = 4
+    WORK_COMPLETED = 5
+    REVERSING = 6
+    PARKING = 7
+    ERROR_INTERACTION = 8
+    EMERGENCY = 9
     HELP_REQUEST = 10
 
 
@@ -52,10 +53,10 @@ class Robot:
     and perform various actions such as parking and opening doors.
     The attributes of this robot are private, but can be interacted with setter/getter methods.
     """
-    _is_charging: bool
-    _is_door_opened: bool
-    _is_parked: bool
-    _is_reversing: bool
+    # _is_charging: bool
+    # _is_door_opened: bool
+    # _is_parked: bool
+    # _is_reversing: bool
     _status: dict[bool] = {"is_charging": False,
                            "is_door_opened": False, "is_parked": False, "is_reversing": False}
 
@@ -80,17 +81,20 @@ class Robot:
 
     def __str__(self) -> str:
         # TODO: Good overview string of Robot instance
-        return f"Robot | Amount of Packages: {len(self._packages)} | Status: {self.status} | Packages: {self._packages}"
+        return f"Robot | Amount of Packages: {len(self._packages)} | Status: {
+            self.status} | Packages: {self._packages}"
 
     ########################################################################################
     # Setters/Getters                                                                      #
     ########################################################################################
     @property
     def status(self) -> dict[bool]:
+        """
+        TODO: Docstring
+        """
         return self._status
 
     @status.setter
-    # def status(self, is_charging: bool = None, is_door_opened: bool = None, is_parked: bool = None,  is_reversing: bool = None):
     def status(self, **kwargs):
         """
         TODO: Docstring
@@ -103,71 +107,72 @@ class Robot:
                 except (KeyError, ValueError):
                     continue
 
-    @property
-    def is_charging(self) -> bool:
-        return self._is_charging
+    # @property
+    # def is_charging(self) -> bool:
+    #     return self._is_charging
 
-    @is_charging.setter
-    def is_charging(self, value):
-        try:
-            is_charging = strtobool(value)
-            self._is_charging = is_charging
-        except AttributeError:
-            self._is_charging = bool(value)
-        except ValueError:
-            self._is_charging = False
+    # @is_charging.setter
+    # def is_charging(self, value):
+    #     try:
+    #         is_charging = strtobool(value)
+    #         self._is_charging = is_charging
+    #     except AttributeError:
+    #         self._is_charging = bool(value)
+    #     except ValueError:
+    #         self._is_charging = False
 
-    @property
-    def is_door_opened(self) -> bool:
-        return self._is_door_opened
+    # @property
+    # def is_door_opened(self) -> bool:
+    #     return self._is_door_opened
 
-    @is_door_opened.setter
-    def is_door_opened(self, value):
-        try:
-            is_door_opened = strtobool(value)
-            self._is_door_opened = is_door_opened
-        except AttributeError:
-            self._is_door_opened = bool(value)
-        except ValueError:
-            self._is_door_opened = False
+    # @is_door_opened.setter
+    # def is_door_opened(self, value):
+    #     try:
+    #         is_door_opened = strtobool(value)
+    #         self._is_door_opened = is_door_opened
+    #     except AttributeError:
+    #         self._is_door_opened = bool(value)
+    #     except ValueError:
+    #         self._is_door_opened = False
 
-    @property
-    def is_parked(self) -> bool:
-        return self._is_parked
+    # @property
+    # def is_parked(self) -> bool:
+    #     return self._is_parked
 
-    @is_parked.setter
-    def is_parked(self, value):
-        try:
-            is_parked = strtobool(value)
-            self._is_parked = is_parked
-        except AttributeError:
-            self._is_parked = bool(value)
-        except ValueError:
-            self._is_parked = False
+    # @is_parked.setter
+    # def is_parked(self, value):
+    #     try:
+    #         is_parked = strtobool(value)
+    #         self._is_parked = is_parked
+    #     except AttributeError:
+    #         self._is_parked = bool(value)
+    #     except ValueError:
+    #         self._is_parked = False
 
-    @property
-    def is_reversing(self) -> bool:
-        return self._is_reversing
+    # @property
+    # def is_reversing(self) -> bool:
+    #     return self._is_reversing
 
-    @is_reversing.setter
-    def is_reversing(self, value):
-        try:
-            is_reversing = strtobool(value)
-            self._is_reversing = is_reversing
-        except AttributeError:
-            self._is_reversing = bool(value)
-        except ValueError:
-            self._is_reversing = False
+    # @is_reversing.setter
+    # def is_reversing(self, value):
+    #     try:
+    #         is_reversing = strtobool(value)
+    #         self._is_reversing = is_reversing
+    #     except AttributeError:
+    #         self._is_reversing = bool(value)
+    #     except ValueError:
+    #         self._is_reversing = False
 
     def get_robot_status(self):
         """
         Returns the entire current status of any given robot.
         """
         params = {
-            "is_parked": self._is_parked,
-            "is_door_opened": self._is_door_opened,
-            "is_reversing": self._is_reversing,
-            "is_charging": self._is_charging,
+            "status": self.status,
+            # "is_parked": self._is_parked,
+            # "is_door_opened": self._is_door_opened,
+            # "is_reversing": self._is_reversing,
+            # "is_charging": self._is_charging,
             "battery_status": self._battery_status,
             "message": self._message,
             "led_rgb": self._led_rgb,
