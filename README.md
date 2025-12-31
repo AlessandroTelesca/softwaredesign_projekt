@@ -44,14 +44,20 @@ led_rgb: tuple[int, int, int]
 packages: list[Package]
 ```
 Returns the status of the robot as well as its ID.  
-#### /api/robot/read/<int::robot_id>
-`/api/robot/read/<int:robot_id>` _/ GET_ gets a specified robot by its ID.
+#### /api/robot/read
+`/api/robot/read` _/ GET_ gets a specified robot by its ID.
+```
+robot_id: int
+```
 
 #### /api/robot/update/<int::robot_id>
 TODO
 
-#### /api/robot/delete/<int::robot_id>
-`/api/robot/delete/<int:robot_id>` _/ POST_ deletes a specified robot by its ID.
+#### /api/robot/delete
+`/api/robot/delete` _/ POST_ deletes a specified robot by its ID.
+```
+robot_id: int
+```
 
 ### Packages
 To handle packages, there must at least be one robot in the simulation.  
@@ -112,5 +118,6 @@ Start web app inside frontend/. `ng serve --open --port 8080`
 [Build a CRUD App with Python, Flask, and Angular](https://developer.okta.com/blog/2019/03/25/build-crud-app-with-python-flask-angular)  
 [Open Street Map using OSMNX: how to retrieve the Hannover subway network?](https://stackoverflow.com/questions/62067243/open-street-map-using-osmnx-how-to-retrieve-the-hannover-subway-network)  
 [GeoJSON](https://geojson.io/#map=9.2/48.9302/8.5221)  
-[How To Structure a Large Flask Application-Best Practices for 2025](https://dev.to/gajanan0707/how-to-structure-a-large-flask-application-best-practices-for-2025-9j2)
+[How To Structure a Large Flask Application-Best Practices for 2025](https://dev.to/gajanan0707/how-to-structure-a-large-flask-application-best-practices-for-2025-9j2)  
+[Flask HTTP methods, handle GET & POST requests](https://www.geeksforgeeks.org/python/flask-http-methods-handle-get-post-requests/)
 

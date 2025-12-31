@@ -10,6 +10,7 @@ import unittest
 import requests
 
 URL: str = "http://localhost:5000/api"
+TIMEOUT: int = 5
 
 
 def get_request(query: str, params=None) -> requests.Response:
@@ -17,14 +18,14 @@ def get_request(query: str, params=None) -> requests.Response:
     Sends a GET request with the given parameters.
     query: The GET request query; requires a / at the start.
     """
-    return requests.get(URL + query, params=params)
+    return requests.get(URL + query, params=params, timeout=TIMEOUT)
 
 
 def post_request(query: str, params=None) -> requests.Response:
     """
     Sends a POST request with the given parameters.
     """
-    return requests.post(URL + query, params=params)
+    return requests.post(URL + query, params=params, timeout=TIMEOUT)
 
 
 class TestAPIModule(unittest.TestCase):
@@ -78,7 +79,8 @@ class TestAPIModule(unittest.TestCase):
             )
             if is_valid_input:
                 self.assertEqual(
-                    battery_status, test_value, f"Expected: {test_value} | Result: {battery_status}")
+                    battery_status, test_value, f"Expected: {
+                        test_value} | Result: {battery_status}")
 
             self.assertTrue(0.0 <= battery_status <= 100.0)
 

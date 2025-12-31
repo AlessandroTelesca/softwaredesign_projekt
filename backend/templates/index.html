@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>KVV Debug</title>
 </head>
+
 <body>
     <h2>KVV App - Backend Debug Interface</h2>
     Quick overview of the current Flask backend and middleware for debugging purposes.
@@ -10,13 +12,26 @@
     <h3>Simulation:</h3>
     {{ sim }}
 
+    <form action="{{ url_for('sim.reset_simulation')}}" method="POST">
+        <button type="submit">POST/ Reset simulation</button>
+    </form>
+
 
     <h3>Robots:</h3>
     {% for robot in sim.robots %}
-        {{ robot }} <br>
+    {{ robot }} <br>
     {% endfor %}
+
     <form action="{{ url_for('robot.create_new_robot')}}" method="POST">
         <button type="submit">POST/ Create a New Robot</button>
+    </form>
+
+    <br>
+
+    <form action="{{ url_for('robot.get_robot_status')}}" method="GET">
+        <label for="robot_id">Robot ID</label>
+        <input name="robot_id" id="robot_id " type="number">
+        <button type="submit">GET/ Look Up Robot</button>
     </form>
 
 
@@ -26,18 +41,19 @@
     {% endfor %}
     <form action="{{ url_for('package.create_new_pkg')}}" method="POST">
         <label for="robot_id">Robot ID</label>
-        <input name="robot_id" id="robot_id "type="number">
+        <input name="robot_id" id="robot_id " type="number">
 
         <label for="pkg_size">Large Package Size</label>
         <input name="pkg_size" id="pkg_size" type="number" value="1">
 
         <label for="start">Start Point</label>
-        <input name="start" id="start "type="text" value="Karlsruhe Hauptbahnhof">
+        <input name="start" id="start " type="text" value="Karlsruhe Hauptbahnhof">
 
         <label for="destination">Destination</label>
-        <input name="destination" id="destination "type="text" value="Karlsruhe Hauptbahnhof">
+        <input name="destination" id="destination " type="text" value="Karlsruhe Hauptbahnhof">
 
         <button type="submit">POST/ Create a New Package</button>
     </form>
 </body>
+
 </html>

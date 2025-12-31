@@ -53,31 +53,24 @@ class Robot:
     and perform various actions such as parking and opening doors.
     The attributes of this robot are private, but can be interacted with setter/getter methods.
     """
-    # _is_charging: bool
-    # _is_door_opened: bool
-    # _is_parked: bool
-    # _is_reversing: bool
     _status: dict[bool] = {"is_charging": False,
                            "is_door_opened": False, "is_parked": False, "is_reversing": False}
-
     _battery_status: float
     _message: str
     _led_rgb: tuple[int, int, int]
     _packages: list[Package] = []
 
-    def __init__(self, is_parked, is_door_opened,
-                 is_reversing: bool,
-                 is_charging: bool, battery_status: float,
-                 message: str, led_rgb: tuple[int, int, int],
-                 packages: list[Package]):
-        self._is_parked = is_parked
-        self._is_door_opened = is_door_opened
-        self._is_reversing = is_reversing
-        self._is_charging = is_charging
-        self.set_battery_status(battery=battery_status)
-        self._message = message
-        self._led_rgb = led_rgb
-        self._packages = packages
+    def __init__(self, is_parked=False, is_door_opened=False,
+                 is_reversing: bool = False,
+                 is_charging: bool = False, battery_status: float = 100.0,
+                 message: str = "", led_rgb: tuple[int, int, int] = (0, 0, 0)):
+        self.status["is_charging"] = is_charging
+        self.status["is_door_opened"] = is_door_opened
+        self.status["is_parked"] = is_parked
+        self.status["is_reversing"] = is_reversing
+        self.battery_status = battery_status
+        self.message = message
+        self.led_rgb = led_rgb
 
     def __str__(self) -> str:
         # TODO: Good overview string of Robot instance
@@ -107,61 +100,53 @@ class Robot:
                 except (KeyError, ValueError):
                     continue
 
-    # @property
-    # def is_charging(self) -> bool:
-    #     return self._is_charging
+    @property
+    def battery_status(self) -> float:
+        """
+        TODO: Docstring.
+        """
+        return self._battery_status
 
-    # @is_charging.setter
-    # def is_charging(self, value):
-    #     try:
-    #         is_charging = strtobool(value)
-    #         self._is_charging = is_charging
-    #     except AttributeError:
-    #         self._is_charging = bool(value)
-    #     except ValueError:
-    #         self._is_charging = False
+    @battery_status.setter
+    def battery_status(self, val: float):
+        """
+        Cleans any given query string and returns a valid battery status (between 0.0 - 100.0 %).
+        """
+        try:
+            val = float(val)
+            self._battery_status = max(0.0, min(val, 100.0))
+        except (TypeError, ValueError):
+            self._battery_status = 100.0
 
-    # @property
-    # def is_door_opened(self) -> bool:
-    #     return self._is_door_opened
+    @property
+    def message(self) -> str:
+        """
+        TODO: Docstring.
+        """
+        return self._message
 
-    # @is_door_opened.setter
-    # def is_door_opened(self, value):
-    #     try:
-    #         is_door_opened = strtobool(value)
-    #         self._is_door_opened = is_door_opened
-    #     except AttributeError:
-    #         self._is_door_opened = bool(value)
-    #     except ValueError:
-    #         self._is_door_opened = False
+    @message.setter
+    def message(self, val: str):
+        """
+        TODO Docstring
+        """
+        # TODO
+        self._message = val
 
-    # @property
-    # def is_parked(self) -> bool:
-    #     return self._is_parked
+    @property
+    def led_rgb(self) -> tuple[int, int, int]:
+        """
+        TODO DOCSTRING
+        """
+        return self._led_rgb
 
-    # @is_parked.setter
-    # def is_parked(self, value):
-    #     try:
-    #         is_parked = strtobool(value)
-    #         self._is_parked = is_parked
-    #     except AttributeError:
-    #         self._is_parked = bool(value)
-    #     except ValueError:
-    #         self._is_parked = False
-
-    # @property
-    # def is_reversing(self) -> bool:
-    #     return self._is_reversing
-
-    # @is_reversing.setter
-    # def is_reversing(self, value):
-    #     try:
-    #         is_reversing = strtobool(value)
-    #         self._is_reversing = is_reversing
-    #     except AttributeError:
-    #         self._is_reversing = bool(value)
-    #     except ValueError:
-    #         self._is_reversing = False
+    @led_rgb.setter
+    def led_rgb(self, led: tuple[int, int, int] = None):
+        """
+        TODO DOCSTRING
+        """
+        # TODO
+        self._led_rgb = led
 
     def get_robot_status(self):
         """
@@ -169,45 +154,43 @@ class Robot:
         """
         params = {
             "status": self.status,
-            # "is_parked": self._is_parked,
-            # "is_door_opened": self._is_door_opened,
-            # "is_reversing": self._is_reversing,
-            # "is_charging": self._is_charging,
-            "battery_status": self._battery_status,
-            "message": self._message,
-            "led_rgb": self._led_rgb,
-            "packages": self._packages,
+            "battery_status": self.battery_status,
+            "message": self.message,
+            "led_rgb": self.led_rgb,
+            "packages": self.packages,
         }
         return params
-
-    def set_battery_status(self, battery: float):
-        """
-        Cleans any given query string and returns a valid battery status (between 0.0 - 100.0 %).
-        """
-        # TODO: Rewrite this in accord with the other setter/getter methods.
-        try:
-            battery = float(battery)
-            self._battery_status = max(0.0, min(battery, 100.0))
-        except (TypeError, ValueError):
-            self._battery_status = 100.0
 
     ########################################################################################
     # Packages                                                                             #
     ########################################################################################
-    def add_new_package(self, size: PackageSize, start: str, destination: str):
+    @property
+    def packages(self) -> list[Package]:
+        return self._packages
+
+    @packages.setter
+    def packages(self, size: PackageSize, start: str, destination: str):
         """
         TODO: Docstring
         """
+        # TODO
+        if self._packages is None:
+            self._packages = []
+
         if len(self._packages) >= MAX_NUM_OF_PACKAGES:
-            return
+            return False
         amount_small_packages: int = sum(
-            1 for package in self._packages if package.size == PackageSize.SMALL)
+            1 for package in self.packages if package.size == PackageSize.SMALL)
         amount_large_packages: int = sum(
-            1 for package in self._packages if package.size == PackageSize.LARGE)
+            1 for package in self.packages if package.size == PackageSize.LARGE)
 
         if size is PackageSize.SMALL and amount_small_packages >= MAX_NUM_OF_SMALL_PACKAGES:
-            return
+            return False
         if size is PackageSize.LARGE and amount_large_packages >= MAX_NUM_OF_SMALL_PACKAGES:
-            return
+            return False
         pkg = Package(start=start, destination=destination, size=size)
         self._packages.append(pkg)
+        return True
+    
+    #def add_package():
+
