@@ -120,4 +120,3 @@ Start web app inside frontend/. `ng serve --open --port 8080`
 [GeoJSON](https://geojson.io/#map=9.2/48.9302/8.5221)  
 [How To Structure a Large Flask Application-Best Practices for 2025](https://dev.to/gajanan0707/how-to-structure-a-large-flask-application-best-practices-for-2025-9j2)  
 [Flask HTTP methods, handle GET & POST requests](https://www.geeksforgeeks.org/python/flask-http-methods-handle-get-post-requests/)
-

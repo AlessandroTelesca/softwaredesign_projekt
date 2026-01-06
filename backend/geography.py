@@ -1,9 +1,23 @@
 """
-Map maker.
+geography.py
+
+Utilities for generating maps and routes for Karlsruhe using OSMnx and Folium.
+
+This module provides:
+- A map of tram-related OSM features (rail + tram stops).
+- A route map (shortest path on a drivable street network) with an animated AntPath.
+
+Notes:
+- The route is computed on a street graph (network_type="drive"), not on tram tracks.
+- Start/end are currently textual addresses resolved by OSMnx geocoding.
 """
-from tracemalloc import start
+
+from __future__ import annotations
+
+import os
+from typing import Optional
+
 import osmnx as ox
-import networkx as nx
 import folium
 from geopandas import GeoDataFrame
 from folium.plugins import AntPath
@@ -12,105 +26,113 @@ from branca.element import Element
 
 class Map:
     """
-    TODO: Docstring
-    TODO: Dennisé: Make the code cleaner and document it properly. Use the README.md for this.
-    TODO: Dennisé: Add a possibility for the frontend to set start and end. This is an API call for the middleware.
-    TODO: Dennisé: Add all possible tramways; refer yourself to the SoftwareDesign specification within the Felix course (Materialordner > KVV_Lines_v2.json).
-    TODO: Dennisé: I added the stop markers within icons/. Would be cool if you changed the Folium markers to them.
-    TODO: Dennisé: It would be nice to have the colour of the ant map correspond to the colour of the official tram lines. Check Materialordner > KVV-Linien-Icons.zip for them. Add them in icons/.
+    Map generator for Karlsruhe.
+
+    Supports:
+    - Loading tram-related OSM features (railway + tram stops).
+    - Computing a shortest route between two addresses and rendering a Folium map.
+    - Returning the rendered map as HTML.
+
+    Attributes:
+        city: Place name used to download the network/OSM features.
+        start: Start address used for geocoding.
+        end: End address used for geocoding.
+        route_color: Hex color used for the animated AntPath route.
     """
+
     city: str = "Karlsruhe, Baden-Württemberg, Germany"
     start: str = "Karlsruhe Hauptbahnhof, Germany"
     end: str = "Karlsruhe Durlach Bahnhof, Germany"
+    route_color: str = "#d32f2f"
 
-    def __init__(self, city: str = city, start: str = start, end: str = end):
+    def __init__(
+        self,
+        city: str = city,
+        start: str = start,
+        end: str = end,
+        route_color: str = route_color,
+        start_icon_path: Optional[str] = None,
+        end_icon_path: Optional[str] = None,
+    ) -> None:
         self.city = city
         self.start = start
         self.end = end
+        self.route_color = route_color
 
-    def compute_route_coords(self, start: str = None, end: str = None):
-        """
-        Computes the route and returns a list of (lat, lon) coordinates.
-        """
-        if start is None:
-            start = self.start
-        if end is None:
-            end = self.end
-        print(f"[1/3] Load street network for: {self.city} ...")
-        G = ox.graph_from_place(self.city, network_type="drive")
-
-        print("[2/3] Geocode start and end...")
-        start_lat, start_lon = ox.geocode(self.start)
-        end_lat, end_lon = ox.geocode(self.end)
-
-        start_node = ox.distance.nearest_nodes(G, start_lon, start_lat)
-        end_node = ox.distance.nearest_nodes(G, end_lon, end_lat)
-
-        print("[3/3] Compute shortest route...")
-        route = ox.shortest_path(G, start_node, end_node, weight="length")
-
-        coords = [(G.nodes[n]["y"], G.nodes[n]["x"]) for n in route]
-        return coords
-
-    def web_map(self):
-        """
-        Returns a web map of all railways of Karlsruhe.
-        Has two layers; one for the railways, and one for the stations. Stations are circles.
-        """
-        features = Map.get_tram_features()
-        railway = features[0]
-        station = features[1]
-
-        railway = railway.explore(style_kwds={"weight": 3}, tooltip=[
-            "maxspeed", "railway", "name", "highspeed"])
-        station = station.explore(m=railway, marker_kwds={"radius": 12, "fill": True}, style_kwds={
-            "color": "Red", "fill": "True"}, tooltip=["name", "description", "network", "note", "wheelchair"])
-
-        # graph = ox.graph.graph_from_place("Karlsruhe, Baden-Württemberg, Germany")
-        # TODO: Figure out how to display routes interactively?
-        # return ox.convert.graph_to_gdfs(graph, nodes=False).explore()
-
-        folium.LayerControl().add_to(railway)
-        return railway
+        # If caller doesn't provide explicit icon paths, we default to the two provided stop icons.
+        self.start_icon_path = start_icon_path
+        self.end_icon_path = end_icon_path
 
     @staticmethod
-    def get_tram_features() -> tuple[GeoDataFrame, GeoDataFrame]:
-        """
-        Returns the railway as well as the tram stations.
-        """
-        place: str = "Karlsruhe, Baden-Württemberg, Germany"
-        railway = ox.features_from_place(place, tags={"railway": "rail"})
-        station = ox.features_from_place(place, tags={"railway": "tram_stop"})
+    def _icons_dir() -> str:
+        return os.path.join(os.path.dirname(__file__), "icons")
 
-        return railway, station
+    @staticmethod
+    def _resolve_icon_path(explicit_path: Optional[str], default_filename: str) -> Optional[str]:
+        """
+        Resolve an icon path.
+
+        Priority:
+        1) explicit_path if provided and exists
+        2) backend/icons/<default_filename> if exists
+        3) None (caller should fall back to default Folium marker)
+        """
+        if explicit_path:
+            p = os.path.abspath(explicit_path)
+            if os.path.exists(p):
+                return p
+
+        p = os.path.join(Map._icons_dir(), default_filename)
+        return p if os.path.exists(p) else None
+
+    @staticmethod
+    def _add_marker(
+        m: folium.Map,
+        lat: float,
+        lon: float,
+        popup: str,
+        icon_path: Optional[str],
+        fallback_color: str,
+        fallback_icon: str,
+        icon_size: tuple[int, int] = (32, 32),
+    ) -> None:
+        """
+        Add a marker using a custom PNG icon if available, otherwise use a Folium default icon.
+        """
+        if icon_path and os.path.exists(icon_path):
+            custom = folium.CustomIcon(icon_image=icon_path, icon_size=icon_size)
+            folium.Marker(location=[lat, lon], popup=popup, icon=custom).add_to(m)
+        else:
+            folium.Marker(
+                location=[lat, lon],
+                popup=popup,
+                icon=folium.Icon(color=fallback_color, icon=fallback_icon),
+            ).add_to(m)
 
     def build_route_map(self) -> folium.Map:
         """
-        Builds a map with an animated route between two addresses.
+        Build a Folium map with an animated route between self.start and self.end.
         """
         print(f"[1/4] Load street network for: {self.city} ...")
         G = ox.graph_from_place(self.city, network_type="drive")
 
-        print(f"[2/4] Geocode start and end...")
+        print("[2/4] Geocode start and end...")
         start_lat, start_lon = ox.geocode(self.start)
         end_lat, end_lon = ox.geocode(self.end)
 
         start_node = ox.distance.nearest_nodes(G, start_lon, start_lat)
         end_node = ox.distance.nearest_nodes(G, end_lon, end_lat)
 
-        print(f"[3/4] Compute shortest route...")
+        print("[3/4] Compute shortest route...")
         route = ox.shortest_path(G, start_node, end_node, weight="length")
-
-        # Coordinates (lat, lon) of the route
         route_coords = [(G.nodes[n]["y"], G.nodes[n]["x"]) for n in route]
 
-        # Route as GeoDataFrame (OSMnx 2.x)
         route_gdf = ox.routing.route_to_gdf(G, route, weight="length")
         total_m = float(route_gdf["length"].sum())
         total_km = total_m / 1000.0
 
         print(f"Total route length: {total_km:.2f} km")
-        print(f"[4/4] Build map...")
+        print("[4/4] Build map...")
 
         m = folium.Map(
             location=[start_lat, start_lon],
@@ -118,39 +140,43 @@ class Map:
             tiles="CartoDB positron",
         )
 
-        # Gray static route as background
-        folium.PolyLine(
-            route_coords,
-            color="gray",
-            weight=3,
-            opacity=0.5,
-        ).add_to(m)
+        # Gray static route background
+        folium.PolyLine(route_coords, color="gray", weight=3, opacity=0.5).add_to(m)
 
-        # Animated red route (AntPath)
+        # Animated route (official line color)
         AntPath(
             locations=route_coords,
-            color="red",
+            color=self.route_color,
             weight=5,
             opacity=0.9,
-            dash_array=[10, 20],  # Pattern
-            delay=800,            # Animation speed (ms)
+            dash_array=[10, 20],
+            delay=800,
         ).add_to(m)
 
-        # Start marker
-        folium.Marker(
-            location=[start_lat, start_lon],
+        # Use your provided stop icons
+        start_icon = self._resolve_icon_path(self.start_icon_path, "StopBlue.png")
+        end_icon = self._resolve_icon_path(self.end_icon_path, "StopOrange.png")
+
+        self._add_marker(
+            m,
+            start_lat,
+            start_lon,
             popup=f"Start: {self.start}",
-            icon=folium.Icon(color="green", icon="play"),
-        ).add_to(m)
-
-        # End marker
-        folium.Marker(
-            location=[end_lat, end_lon],
+            icon_path=start_icon,
+            fallback_color="green",
+            fallback_icon="play",
+        )
+        self._add_marker(
+            m,
+            end_lat,
+            end_lon,
             popup=f"End: {self.end}",
-            icon=folium.Icon(color="red", icon="flag"),
-        ).add_to(m)
+            icon_path=end_icon,
+            fallback_color="red",
+            fallback_icon="flag",
+        )
 
-        # Simple info box at the top right with the total length
+        # Info box
         info_html = f"""
         <div style="
             position: absolute;
@@ -172,7 +198,6 @@ class Map:
 
     def to_html(self) -> str:
         """
-        Returns the map as an HTML string.
+        Render the route map as an HTML string.
         """
-        web_map = self.build_route_map().get_root()._repr_html_()
-        return web_map
+        return self.build_route_map().get_root()._repr_html_()

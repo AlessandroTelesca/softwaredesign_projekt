@@ -1,8 +1,13 @@
 """
-Has the json response and Flask blueprints for all API modules.
+Shared helpers and Flask blueprints for all API modules.
 """
-import json
-from flask import Blueprint
+
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, Tuple
+
+from flask import Blueprint, jsonify
+
 
 DEBUG_API = Blueprint("debug", __name__)
 MAP_API = Blueprint("map", __name__)
@@ -10,8 +15,16 @@ PKG_API = Blueprint("package", __name__)
 ROBOT_API = Blueprint("robot", __name__)
 SIM_API = Blueprint("sim", __name__)
 
-def json_response(payload: str) -> str:
+
+def json_response(payload: Dict[str, Any], status: int = 200):
     """
-    Helper function to return a JSON response for the middleware.
+    Return a proper JSON response for API endpoints.
+
+    Args:
+        payload: JSON-serializable dictionary to return to the client.
+        status: HTTP status code (default: 200).
+
+    Returns:
+        A Flask Response object with application/json content type.
     """
-    return json.dumps(payload)
+    return jsonify(payload), status
