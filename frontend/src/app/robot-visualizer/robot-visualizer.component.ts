@@ -23,12 +23,21 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
   private tramModel: THREE.Object3D | null = null;
   private controls: any;
   private lightMeshes: THREE.Mesh[] = [];
+  private batteryStatusMesh: THREE.Mesh | null = null;
+  private chargingStatusMesh: THREE.Mesh | null = null;
+  private doorMeshes: THREE.Mesh[] = [];
   private flashColor = new THREE.Color(0xff0000); // red flash
+  private amberColor = new THREE.Color(0xffaa00); // amber
+  private doorIsOpen = false;
 
   // start disabled so a button can trigger flashing
   private flashEnabled = false;
   private lastToggleTime = 0;
   private lightsOn = false;
+
+  // Charging pulse state
+  private lastChargingToggleTime = 0;
+  private chargingLightOn = false;
   public robotId = 0;
   public robotStatus: RobotStatus | null = null;
   public loading = false;
@@ -60,11 +69,6 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
     this.robotService.getRobotStatus(id).subscribe({
       next: (resp) => {
         if (resp.error) {
-          // if none exists or out of range, create and retry once
-          if (allowCreate && (resp.error.includes('No robots available') || resp.error.includes('out of range'))) {
-            this.createAndReload();
-            return;
-          }
           this.robotStatus = null;
           this.error = resp.error;
         } else if (resp.status) {
@@ -75,31 +79,10 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
-        // Try to read backend-provided error message
-        const backendMsg: string | undefined = err?.error?.error || err?.error?.message;
-        if (
-          allowCreate && backendMsg && (backendMsg.includes('No robots available') || backendMsg.includes('out of range'))
-        ) {
-          this.createAndReload();
-          return;
-        }
         this.loading = false;
         this.robotStatus = null;
+        const backendMsg: string | undefined = err?.error?.error || err?.error?.message;
         this.error = backendMsg || (err?.message) || 'Unbekannter Fehler beim Laden des Roboters.';
-      }
-    });
-  }
-
-  private createAndReload(): void {
-    this.robotService.createRobot().subscribe({
-      next: (res) => {
-        this.robotId = typeof res?.robot_id === 'number' ? res.robot_id : 0;
-        // retry load once without creating again
-        this.loadRobotStatus(this.robotId, false);
-      },
-      error: (err) => {
-        this.loading = false;
-        this.error = err?.error?.error || err?.message || 'Roboter konnte nicht erstellt werden.';
       }
     });
   }
@@ -169,13 +152,15 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
           this.robotModel.rotation.y = -Math.PI/2;
           this.scene.add(this.robotModel);
 
-          // find meshes named "light"
+          // find meshes named "light", "GlowRow", "door", or "GlowRow.001"
           this.robotModel.traverse((child: any) => {
+            console.log('Robot model child:', child.name);
             if (child && child.isMesh) {
-              const name = (child.name || '').toLowerCase();
-              const matName = (child.material && child.material.name || '').toLowerCase();
+              const name = child.name || '';
 
-              if (name.includes('light')) {
+              if (name.includes('door')) {
+                this.doorMeshes.push(child);
+              } else if (name.includes('light') || name.includes('GlowRow')) {
                 // clone material so changes only affect this mesh
                 let mat = child.material.clone();
                 if (!('emissive' in mat)) {
@@ -185,7 +170,16 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
                 mat.emissive = mat.emissive || new THREE.Color(0x000000);
                 (mat as any).emissiveIntensity = 1;
                 child.material = mat;
-                this.lightMeshes.push(child);
+                
+                // Track GlowRow meshes separately for status visualization
+                const originalName = child.name;
+                if (originalName === 'GlowRow001') {
+                  this.batteryStatusMesh = child;
+                } else if (originalName === 'GlowRow') {
+                  this.chargingStatusMesh = child;
+                } else {
+                  this.lightMeshes.push(child);
+                }
               }
             }
           });
@@ -257,32 +251,95 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private batteryStatus() {
-    if (!this.robotStatus?.battery_status) return;
-    // Could visualize battery level (e.g., change LED color based on level)
-    // For now, just log or store for UI display
-  }
+  private applyChargingPulse() {
+    if (!this.robotStatus?.is_charging || !this.chargingStatusMesh) return;
 
-  private isCharging() {
-    if (!this.robotStatus?.is_charging) return;
-    // Visual indicator: could pulse lights or change color
-    // Example: set LED to green when charging
-    if (this.lightMeshes.length > 0) {
-      const chargingColor = new THREE.Color(0x00ff00); // green
-      this.lightMeshes.forEach(mesh => {
-        const mat: any = mesh.material;
-        if (mat && mat.emissive && !this.flashEnabled) {
-          mat.emissive.copy(chargingColor);
-          mat.needsUpdate = true;
-        }
-      });
+    const now = performance.now() / 250; // seconds
+
+    if (now - this.lastChargingToggleTime >= 1) {
+      this.chargingLightOn = !this.chargingLightOn;
+      this.lastChargingToggleTime = now;
+    }
+
+    const targetColor = this.chargingLightOn ? new THREE.Color(0x00ff00) : new THREE.Color(0x000000);
+    const mat: any = this.chargingStatusMesh.material;
+    if (mat && mat.emissive) {
+      mat.emissive.copy(targetColor);
+      mat.needsUpdate = true;
     }
   }
 
+  private batteryStatus() {
+    if (!this.robotStatus?.battery_status || !this.batteryStatusMesh) return;
+    
+    const mat: any = this.batteryStatusMesh.material;
+    if (!mat || !mat.emissive) return;
+
+    // Parse battery status as percentage (0-100)
+    let batteryLevel = 0;
+    if (typeof this.robotStatus.battery_status === 'number') {
+      batteryLevel = this.robotStatus.battery_status;
+    } else if (typeof this.robotStatus.battery_status === 'string') {
+      batteryLevel = parseInt(this.robotStatus.battery_status, 10) || 0;
+    }
+
+    // Clamp between 0-100
+    batteryLevel = Math.max(0, Math.min(100, batteryLevel));
+
+    // Color gradient: red (0%) -> yellow (50%) -> green (100%)
+    let color = new THREE.Color();
+    if (batteryLevel < 50) {
+      // Red to Yellow: 0% -> 50%
+      const t = batteryLevel / 50;
+      color.setHSL(0, 1, 0.5); // Red
+      color.lerp(new THREE.Color(0xffff00), t); // Lerp towards yellow
+    } else {
+      // Yellow to Green: 50% -> 100%
+      const t = (batteryLevel - 50) / 50;
+      color.setHSL(60 / 360, 1, 0.5); // Yellow
+      color.lerp(new THREE.Color(0x00ff00), t); // Lerp towards green
+    }
+
+    mat.emissive.copy(color);
+    mat.needsUpdate = true;
+  }
+
+  private isCharging() {
+    if (!this.chargingStatusMesh) return;
+
+    const mat: any = this.chargingStatusMesh.material;
+    if (!mat || !mat.emissive) return;
+
+    if (!this.robotStatus?.is_charging) {
+      // Show steady amber light when not charging
+      mat.emissive.copy(this.amberColor);
+      mat.needsUpdate = true;
+      return;
+    }
+
+    // When charging, light is controlled by pulsing logic
+    // (handled in applyChargingPulse method)
+  }
+
   private isDoorOpened() {
-    if (!this.robotStatus?.is_door_opened) return;
-    // Could trigger door animation or visual cue
-    // For now, just a placeholder for future door mechanics
+    if (!this.robotStatus?.is_door_opened) {
+      // Close door if it's currently open
+      if (this.doorIsOpen) {
+        this.doorMeshes.forEach(mesh => {
+          mesh.rotation.z = 0;
+        });
+        this.doorIsOpen = false;
+      }
+      return;
+    }
+
+    // Open door if it's currently closed
+    if (!this.doorIsOpen) {
+      this.doorMeshes.forEach(mesh => {
+        mesh.rotation.z = Math.PI / 2;
+      });
+      this.doorIsOpen = true;
+    }
   }
 
   private isParked() {
@@ -353,6 +410,9 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
 
     // call flashing each frame
     this.applyLightFlashing();
+
+    // Apply charging pulse each frame
+    this.applyChargingPulse();
 
     // Render
     this.renderer.render(this.scene, this.camera);

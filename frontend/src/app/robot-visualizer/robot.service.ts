@@ -20,27 +20,11 @@ export interface RobotReadResponse {
   error?: string;
 }
 
-export interface CreateRobotResponse {
-  robot_id: number;
-  status: any;
-  robot_count: number;
-}
-
 @Injectable({ providedIn: 'root' })
 export class RobotService {
   constructor(private http: HttpClient) {}
 
   getRobotStatus(robotId: number): Observable<RobotReadResponse> {
-    return this.http.get<RobotReadResponse>(`${API_URL}/api/robot/read/${robotId}`);
-  }
-
-  createRobot(params?: Record<string, string | number | boolean | null | undefined>): Observable<CreateRobotResponse> {
-    const query = params
-      ? '?' + Object.entries(params)
-          .filter(([, v]) => v !== undefined && v !== null && v !== '')
-          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-          .join('&')
-      : '';
-    return this.http.get<CreateRobotResponse>(`${API_URL}/api/robot/create${query}`);
+    return this.http.get<RobotReadResponse>(`${API_URL}/api/robot/read?robot_id=${robotId}`);
   }
 }
