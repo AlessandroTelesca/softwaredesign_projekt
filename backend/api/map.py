@@ -33,7 +33,7 @@ def api_map():
 @MAP_API.route(f"{END_POINT}/route", methods=["POST"])
 def api_map_route():
     payload = request.get_json(silent=True) or {}
-
+    print(request.args.get("start"))
     start = payload.get("start")
     end = payload.get("end")
 

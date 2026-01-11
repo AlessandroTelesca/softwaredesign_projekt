@@ -46,13 +46,24 @@
         <label for="pkg_size">Large Package Size</label>
         <input name="pkg_size" id="pkg_size" type="number" value="1">
 
-        <label for="start">Start Point</label>
-        <input name="start" id="start " type="text" value="Karlsruhe Hauptbahnhof">
+        <!--<label for="start">Start Point</label>
+        <input name="start" id="start" type="text" value="Karlsruhe Hauptbahnhof">
 
         <label for="destination">Destination</label>
-        <input name="destination" id="destination " type="text" value="Karlsruhe Hauptbahnhof">
+        <input name="destination" id="destination " type="text" value="Karlsruhe Hauptbahnhof">-->
 
         <button type="submit">POST/ Create a New Package</button>
+    </form>
+
+    <h3>Map</h3>
+    <form action="{{ url_for('map.api_map_route')}}" method="POST">
+        <label for="start">Start Point</label>
+        <input name="start" id="start" type="text" value="Karlsruhe Hauptbahnhof, Germany">
+
+        <label for="end">End Point</label>
+        <input name="end" id="end" type="text" value="Karlsruhe Durlach Bahnhof, Germany">
+
+        <button type="submit">POST/ Create Route</button>
     </form>
 </body>
 
