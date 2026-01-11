@@ -146,25 +146,20 @@ class Robot:
         """
         This sets the light of the LED. A LED is in RGB; it is an 8bit unisgned integer.
         """
-        # TODO
-        #r = 0
-        #g = 0
-        #b = 0
         self._led_rgb = [0, 0, 0]
         if led is None or len(led) != 3:
             return
 
-        r, g, b = np.clip(led, 0, 255)
         try:
             if len(led) != 3:
                 self._led_rgb = [0, 0, 0]
                 return
-            r,g,b = np.clip[led, 0, 255]
+            r,g,b = np.clip(led, 0, 255)
             self._led_rgb = [r, g, b]
-        except (TypeError, ValueError):
+        except Exception as e:
+            print(e)
             self._led_rgb = [0, 0, 0]
             return
-        self._led_rgb = led
 
     def get_robot_status(self):
         """
