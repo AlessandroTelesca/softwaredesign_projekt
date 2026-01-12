@@ -10,6 +10,8 @@ import unittest
 import requests
 import test
 
+from backend import robot
+
 URL: str = "http://localhost:5000/api"
 TIMEOUT: int = 5
 
@@ -55,35 +57,35 @@ class TestAPIModule(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIsInstance(response.json(), dict)
 
-    # def test_valid_battery_status(self):
-    #     """
-    #     Checks if the query parameters for the battery status are valid (e.g. is float or int; not <0.0, not >100.0).
-    #     """
-    #     test_cases: list = ["abc", 53, 3.14, -3.0, 101.0]
+    def test_valid_battery_status(self):
+        """
+        Checks if the query parameters for the battery status are valid (e.g. is float or int; not <0.0, not >100.0).
+        """
+        test_cases: list = ["abc", 53, 3.14, -3.0, 101.0]
 
-    #     for test_value in test_cases:
-    #         # Send POST request.
-    #         str_response = post_request(
-    #             "/robot/create", params={"battery_status": test_value}
-    #         )
-    #         battery_status = str_response.json()[
-    #             "status"]["battery_status"]
+        for test_value in test_cases:
+            # Send POST request.
+            str_response = post_request(
+                "/robot/create", params={"battery_status": test_value}
+            )
+            battery_status = str_response.json()[
+                "status"]["battery_status"]
 
-    #         # Check if POST request was acknowledged.
-    #         self.assertEqual(str_response.status_code, 200)
-    #         self.assertIsInstance(battery_status, float)
+            # Check if POST request was acknowledged.
+            self.assertEqual(str_response.status_code, 200)
+            self.assertIsInstance(battery_status, float)
 
-    #         # Checks if given test case was valid input to begin with.
-    #         is_valid_input: bool = (
-    #             isinstance(test_value, (int, float))
-    #             and 0.0 <= test_value <= 100.0
-    #         )
-    #         if is_valid_input:
-    #             self.assertEqual(
-    #                 battery_status, test_value, f"Expected: {
-    #                     test_value} | Result: {battery_status}")
+            # Checks if given test case was valid input to begin with.
+            is_valid_input: bool = (
+                isinstance(test_value, (int, float))
+                and 0.0 <= test_value <= 100.0
+            )
+            if is_valid_input:
+                self.assertEqual(
+                    battery_status, test_value, f"Expected: {
+                        test_value} | Result: {battery_status}")
 
-    #         self.assertTrue(0.0 <= battery_status <= 100.0)
+            self.assertTrue(0.0 <= battery_status <= 100.0)
 
    
     def test_valid_led_status(self):
@@ -160,6 +162,24 @@ class TestAPIModule(unittest.TestCase):
         
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.text.strip(), "")
+
+
+    def test_delete_robot_by_id(self):
+        robot_id = 0
+        # create 2 robots
+        post_request("/api/robot/create")
+        post_request("/api/robot/create")
+
+        # Delete robot with id 0
+        response = post_request(f"/api/robot/delete/{robot_id}")
+        self.assertEqual(response.status_code, 200, response.text)
+
+        data = response.json()
+        self.assertEqual(data["message"], f"Robot {robot_id} deleted successfully.")
+
+        # Verify deletion
+        read_response = get_request(f"/api/robot/read/{robot_id}")
+        self.assertEqual(read_response.status_code, 404)
 
 
 
