@@ -57,20 +57,18 @@ class Robot:
     _status: dict[bool] = {"is_charging": False,
                            "is_door_opened": False, "is_parked": False, "is_reversing": False}
     _battery_status: float
-    _message: str
     _led_rgb: tuple[int, int, int]
     _packages: list[Package] = []
 
     def __init__(self, is_parked=False, is_door_opened=False,
                  is_reversing: bool = False,
                  is_charging: bool = False, battery_status: float = 100.0,
-                 message: str = "", led_rgb: tuple[int, int, int] = (0, 0, 0)):
+                 led_rgb: tuple[int, int, int] = (0, 0, 0)):
         self.status["is_charging"] = is_charging
         self.status["is_door_opened"] = is_door_opened
         self.status["is_parked"] = is_parked
         self.status["is_reversing"] = is_reversing
         self.battery_status = battery_status
-        self.message = message
         self.led_rgb = led_rgb
 
     def __str__(self) -> str:
@@ -84,14 +82,15 @@ class Robot:
     @property
     def status(self) -> dict[bool]:
         """
-        TODO: Docstring
+        Lookup the boolean values of the robot.
         """
         return self._status
 
     @status.setter
     def status(self, **kwargs):
         """
-        TODO: Docstring
+        Setter for the boolean values.
+        Accepts is_charging; is_door_opened; is_parked; is_reversing.
         """
         for key, value in kwargs.items():
             if key in ("is_charging", "is_door_opened", "is_parked", "is_reversing"):
@@ -104,7 +103,7 @@ class Robot:
     @property
     def battery_status(self) -> float:
         """
-        TODO: Docstring.
+        Battery status (float); 0.0 < x 100.0.
         """
         return self._battery_status
 
@@ -118,21 +117,6 @@ class Robot:
             self._battery_status = max(0.0, min(val, 100.0))
         except (TypeError, ValueError):
             self._battery_status = 100.0
-
-    @property
-    def message(self) -> str:
-        """
-        TODO: Docstring.
-        """
-        return self._message
-
-    @message.setter
-    def message(self, val: str):
-        """
-        TODO Docstring
-        """
-        # TODO
-        self._message = val
 
     @property
     def led_rgb(self) -> list[int, int, int]:
@@ -168,7 +152,6 @@ class Robot:
         params = {
             "status": self.status,
             "battery_status": self.battery_status,
-            "message": self.message,
             "led_rgb": self.led_rgb,
             "packages": self.packages,
         }

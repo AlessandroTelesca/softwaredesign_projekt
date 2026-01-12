@@ -39,7 +39,6 @@ is_reversing: bool
 is_charging: bool
 
 battery_status: float
-message: str
 led_rgb: list[int, int, int]
 packages: list[Package]
 ```
