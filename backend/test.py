@@ -7,6 +7,7 @@ This module tests the API endpoints and functionalities, including:
 - Battery status validation
 """
 import unittest
+from joblib import PrintTime
 import requests
 import test
 
@@ -46,7 +47,9 @@ class TestAPIModule(unittest.TestCase):
         self.assertIsInstance(response, requests.Response)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"message": "Hello World"})
-
+        
+        print("GET request successful.")
+    
     def test_robot_create(self, test_count: int = 1):
         """
         Tests if it is possible to create a robot with an empty query string.
@@ -57,6 +60,8 @@ class TestAPIModule(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIsInstance(response.json(), dict)
 
+        print("create robot tested.")
+    
     def test_valid_battery_status(self):
         """
         Checks if the query parameters for the battery status are valid (e.g. is float or int; not <0.0, not >100.0).
@@ -87,8 +92,14 @@ class TestAPIModule(unittest.TestCase):
 
             self.assertTrue(0.0 <= battery_status <= 100.0)
 
-   
+        print("Battery status tested.")
+
     def test_valid_led_status(self):
+        
+        """Test possible LED status
+        """
+
+        
         test_cases: list = [[0, 0, 0], [255, 255, 255]]
 
         for test_value in test_cases:
@@ -115,16 +126,20 @@ class TestAPIModule(unittest.TestCase):
             self.assertIsInstance(led_status, list)
             self.assertEqual(len(led_status), 3)
 
-
+        print("LED status tested.")
+    
     def test_charging_status(self):
             test_cases: list=[True, False, 'true', 'sergsrg', 23, 4.5, 'a']
             for i in test_cases: 
                 charge_post= post_request(
                     "/robot/create", params={"is_charging": i}
-
                 )
+               
                 is_charging=charge_post.json()["status"]["status"]["is_charging"]
                 self.assertIsInstance(is_charging, bool)
+
+            print("Charging status tested.")
+    
     def test_parking(self):
             test_cases: list=[True, False, 'true,' 'jawohlja', 34, 5.4, 'a']
             for i in test_cases:
@@ -133,6 +148,9 @@ class TestAPIModule(unittest.TestCase):
                 )
                 is_parking=park_post.json()["status"]["status"]["is_parked"]
                 self.assertIsInstance(is_parking, bool)
+
+            print("Parking status tested.")
+   
     def test_robot_status_flags(self):
         test_cases = [True, False, "true", "sergsrg", 23, 4.5, "a"]
 
@@ -153,18 +171,12 @@ class TestAPIModule(unittest.TestCase):
                 status_value = response.json()["status"]["status"][flag]
                 self.assertIsInstance(status_value, bool)
 
-
-    def sim_reset(self):
-        #create a robot
-        post_request("/robot/create") 
-        #send POST request to reset simulation
-        response = post_request("/sim/reset")
-        
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.text.strip(), "")
-
-
+        print("Robot status flags tested.")
+    
     def test_delete_robot_by_id(self):
+        """Test if a robot is deletable by his ID
+        """
+        
         robot_id = 0
         # Create two robots
         post_request("/robot/create")
@@ -181,13 +193,46 @@ class TestAPIModule(unittest.TestCase):
         # Verify robot deletion
         read_response = get_request(f"/robot/read/{robot_id}")
         self.assertEqual(read_response.status_code, 404)
+        
+        print("Delete robot by ID tested.")
 
+    
 
+class TestAPIModuleSim(unittest.TestCase):   
 
+    def test_sim_reset(self):
+                """""
+                Test if the Simulation resets properly.
+                """""
+                #create a robot
+                post_request("/robot/create") 
+                
+                #send POST request to reset simulation
+                response = post_request("/sim/reset")
+               
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.text.strip(), '{"message":"Simulation reset successfully."}')
+                
+                print("Simulation reset tested.")
 
+    def test_setting_time(self):
+        """
+        Test setting the simulation time with multiple test cases.
+        """
+        test_cases: list = [
+            ({"hours": "10", "minutes": "30", "seconds": "45"}, 200),
+            ({"hours": "25", "minutes": "30"}, 400),  # Invalid hours
+            ({"hours": "10", "minutes": "61"}, 400),  # Invalid minutes
+        ]
 
-
+        for params, expected_status in test_cases:
+            response = post_request("/sim/set_time", params=params)
+            self.assertEqual(response.status_code, expected_status)
+        
+        print("Simulation time setting tested.")
+       
 
 
 if __name__ == "__main__":
     unittest.main()
+    
