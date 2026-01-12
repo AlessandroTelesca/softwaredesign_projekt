@@ -2,8 +2,10 @@
 Singleton for the Flask backend.
 Provides a global Simulation instance.
 """
+import threading
 from datetime import date, time, datetime
 from backend.robot import Robot
+from time import sleep
 
 
 class Simulation:
@@ -15,21 +17,27 @@ class Simulation:
     current_time (time): The current time in the simulation.
     time_per_tick (int): The amount of simulated time that passes per tick, in seconds.
     """
-    #robots: list[Robot] = []
-    time_per_tick: int = 1
+    seconds_per_tick: int = 1
+    time_per_tick: int = 60
     _cur_date: date
     _cur_time: time
     _robots: list[Robot] = []
+    _ticks: int = 0
+    thread: threading.Thread = None
 
     def __init__(self, robots: list[Robot] = [], current_date: date = date.today(), current_time: time = time(), time_per_tick: int = 1):
         self.current_date = current_date
         self.current_time = current_time
         self.robots = robots
-        self.time_per_tick = time_per_tick
+        self.seconds_per_tick = time_per_tick
+
+        self.thread = threading.Thread(target=self.timer_ticks)
+        self.thread.daemon = True
+        self.thread.start()
 
     def __str__(self) -> str:
-        string = f"Date: {self.current_date} | Time: {self.current_time} | Time Per Tick: {
-            self.time_per_tick} | Amount of Robots: {len(self.robots)}"
+        string = f"Date: {self.current_date} | Time: {self.current_time} | Ticks: {self.ticks} | Time Per Tick: {
+            self.seconds_per_tick} | Amount of Robots: {len(self.robots)}"
         return string
 
     ########################################################################################
@@ -56,6 +64,10 @@ class Simulation:
             self._cur_time = time()
             return
         self._cur_time = cur_time
+    
+    @property
+    def ticks(self) -> int:
+        return self._ticks
 
     @property
     def robots(self) -> list[Robot]:
@@ -70,3 +82,12 @@ class Simulation:
     
     def reset(self):
         self._robots = []
+    
+
+    ### Async
+    def timer_ticks(self):
+        while True:
+            sleep(self.seconds_per_tick)
+            self._ticks += 1
+            #print("ayo")
+
