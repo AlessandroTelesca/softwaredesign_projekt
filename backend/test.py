@@ -122,8 +122,8 @@ class TestAPIModule(unittest.TestCase):
 
 
 
-            '''charge Test
-   def test_charging_status(self):
+            #charge Test
+def test_charging_status(self):
         test_cases: list=[True, False, 'true', 'sergsrg', 23, 4.5, 'a']
         for i in test_cases: 
             charge_post= post_request(
@@ -132,7 +132,7 @@ class TestAPIModule(unittest.TestCase):
             )
             is_charging=charge_post.json()["status"]["status"]["is_charging"]
             self.assertIsInstance(is_charging, bool)
-    def test_parking(self):
+def test_parking(self):
         test_cases: list=[True, False, 'true,' 'jawohlja', 34, 5.4, 'a']
         for i in test_cases:
             park_post= post_request(
@@ -140,7 +140,7 @@ class TestAPIModule(unittest.TestCase):
             )
             is_parking=park_post.json()["status"]["status"]["is_"]
             self.assertIsInstance(is_parking, bool)
-            '''
+            
 def test_robot_status_flags(self):
     test_cases = [True, False, "true", "sergsrg", 23, 4.5, "a"]
 
