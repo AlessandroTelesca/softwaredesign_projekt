@@ -113,17 +113,8 @@ class TestAPIModule(unittest.TestCase):
             self.assertIsInstance(led_status, list)
             self.assertEqual(len(led_status), 3)
 
-      
-                    
-            
 
-            
-            
-
-
-
-            '''charge Test
-   def test_charging_status(self):
+    def test_charging_status(self):
         test_cases: list=[True, False, 'true', 'sergsrg', 23, 4.5, 'a']
         for i in test_cases: 
             charge_post= post_request(
@@ -136,11 +127,11 @@ class TestAPIModule(unittest.TestCase):
         test_cases: list=[True, False, 'true,' 'jawohlja', 34, 5.4, 'a']
         for i in test_cases:
             park_post= post_request(
-                "/robot/create", params={"is_parking": i}
+                "/robot/create", params={"is_parked": i}
             )
-            is_parking=park_post.json()["status"]["status"]["is_"]
+            is_parking=park_post.json()["status"]["status"]["is_parked"]
             self.assertIsInstance(is_parking, bool)
-            '''
+
 def test_robot_status_flags(self):
     test_cases = [True, False, "true", "sergsrg", 23, 4.5, "a"]
 
