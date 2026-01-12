@@ -104,14 +104,14 @@ class TestAPIModule(unittest.TestCase):
             )
 
             try:
-                data = response.json()
+                str_response = response.json()
             except ValueError:
                 self.fail(f"Response is not valid JSON: {response.text}")
 
-            self.assertIn("status", data)
-            self.assertIn("led_rgb", data["status"])
+            self.assertIn("status", str_response)
+            self.assertIn("led_rgb", str_response["status"])
 
-            led_status = data["status"]["led_rgb"]
+            led_status = str_response["status"]["led_rgb"]
             self.assertIsInstance(led_status, list)
             self.assertEqual(len(led_status), 3)
 
@@ -166,20 +166,23 @@ class TestAPIModule(unittest.TestCase):
 
     def test_delete_robot_by_id(self):
         robot_id = 0
-        # create 2 robots
-        post_request("/api/robot/create")
-        post_request("/api/robot/create")
+        # Create two robots
+        post_request("/robot/create")
+        post_request("/robot/create")
 
-        # Delete robot with id 0
-        response = post_request(f"/api/robot/delete/{robot_id}")
-        self.assertEqual(response.status_code, 200, response.text)
+        # Delete robot 0
+        response = post_request(f"/robot/delete/{robot_id}")
+        str_response = response.json()
 
-        data = response.json()
-        self.assertEqual(data["message"], f"Robot {robot_id} deleted successfully.")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(str_response["message"], f"Robot {robot_id} deleted successfully.")
+        self.assertIn("robot_count", str_response)
 
-        # Verify deletion
-        read_response = get_request(f"/api/robot/read/{robot_id}")
+        # Verify robot deletion
+        read_response = get_request(f"/robot/read/{robot_id}")
         self.assertEqual(read_response.status_code, 404)
+
+
 
 
 
