@@ -73,12 +73,16 @@ size: PackageSize[SMALL, LARGE]
 
 ### Map
 Creates an iframe for a map.
+#### /api/map
+`/api/map` _/ GET_ creates a sample route. 
 #### /api/map/route
 `/api/map/route` _/ POST_ creates a route between two points.
 ```
 start: str
 end: str
 ```
+#### /api/map/lines
+`/api/map/lines` _/ GET_ gets all tram lines.
 
 ### Simulation
 Simulation (number of robots, packages, etc.) is tracked within runtime code. 

@@ -69,6 +69,18 @@ def update_robot_status(robot_id: int):
     """
     TODO: Docstring
     """
+    if len(g.sim.robots) == 0:
+        return json_response({"error": "No robots available"}), 404
+    try:
+        robot: Robot = g.sim.robots[int(robot_id)]
+        # TODO: Change robot
+        
+
+        g.sim.robots[robot_id] = robot
+    except IndexError:
+        return json_response({"error": "Robot ID out of range"}), 404
+    except TypeError:
+        return json_response({"error": "Invalid Robot ID"}), 400
 
 
 @ROBOT_API.route("/api/robot/delete/<int:robot_id>", methods=["POST"])

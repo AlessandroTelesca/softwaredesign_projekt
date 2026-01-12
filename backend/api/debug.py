@@ -29,10 +29,3 @@ def api_string(text):
     Example: /api/string/test → { "received": "test" }
     """
     return json_response({"received": text})
-
-@DEBUG_API.route("/api/map", methods=["GET"])
-def api_map():
-    """
-    TODO: Docstring
-    """
-    return render_template("map.html", map=map)
