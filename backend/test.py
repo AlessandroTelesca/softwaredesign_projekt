@@ -113,53 +113,55 @@ class TestAPIModule(unittest.TestCase):
             self.assertIsInstance(led_status, list)
             self.assertEqual(len(led_status), 3)
 
-      
-                    
-            
 
-            
-            
+    def test_charging_status(self):
+            test_cases: list=[True, False, 'true', 'sergsrg', 23, 4.5, 'a']
+            for i in test_cases: 
+                charge_post= post_request(
+                    "/robot/create", params={"is_charging": i}
+
+                )
+                is_charging=charge_post.json()["status"]["status"]["is_charging"]
+                self.assertIsInstance(is_charging, bool)
+    def test_parking(self):
+            test_cases: list=[True, False, 'true,' 'jawohlja', 34, 5.4, 'a']
+            for i in test_cases:
+                park_post= post_request(
+                    "/robot/create", params={"is_parked": i}
+                )
+                is_parking=park_post.json()["status"]["status"]["is_parked"]
+                self.assertIsInstance(is_parking, bool)
+    def test_robot_status_flags(self):
+        test_cases = [True, False, "true", "sergsrg", 23, 4.5, "a"]
+
+        status_flags = [
+            "is_charging",
+            "is_parked",
+            "is_reversing",
+            "is_door_opened"
+        ]
+
+        for flag in status_flags:
+            for value in test_cases:
+                response = post_request(
+                    "/robot/create",
+                    params={flag: value}
+                )
+
+                status_value = response.json()["status"]["status"][flag]
+                self.assertIsInstance(status_value, bool)
 
 
+    def sim_reset(self):
+        #create a robot
+        post_request("/robot/create") 
+        #send POST request to reset simulation
+        response = post_request("/sim/reset")
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.text.strip(), "")
 
-            #charge Test
-def test_charging_status(self):
-        test_cases: list=[True, False, 'true', 'sergsrg', 23, 4.5, 'a']
-        for i in test_cases: 
-            charge_post= post_request(
-                "/robot/create", params={"is_charging": i}
 
-            )
-            is_charging=charge_post.json()["status"]["status"]["is_charging"]
-            self.assertIsInstance(is_charging, bool)
-def test_parking(self):
-        test_cases: list=[True, False, 'true,' 'jawohlja', 34, 5.4, 'a']
-        for i in test_cases:
-            park_post= post_request(
-                "/robot/create", params={"is_parking": i}
-            )
-            is_parking=park_post.json()["status"]["status"]["is_"]
-            self.assertIsInstance(is_parking, bool)
-            
-def test_robot_status_flags(self):
-    test_cases = [True, False, "true", "sergsrg", 23, 4.5, "a"]
-
-    status_flags = [
-        "is_charging",
-        "is_parked",
-        "is_reversing",
-        "is_door_opened"
-    ]
-
-    for flag in status_flags:
-        for value in test_cases:
-            response = post_request(
-                "/robot/create",
-                params={flag: value}
-            )
-
-            status_value = response.json()["status"]["status"][flag]
-            self.assertIsInstance(status_value, bool)
 
 
 
