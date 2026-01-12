@@ -122,6 +122,47 @@ class TestAPIModule(unittest.TestCase):
 
 
 
+            '''charge Test
+   def test_charging_status(self):
+        test_cases: list=[True, False, 'true', 'sergsrg', 23, 4.5, 'a']
+        for i in test_cases: 
+            charge_post= post_request(
+                "/robot/create", params={"is_charging": i}
+
+            )
+            is_charging=charge_post.json()["status"]["status"]["is_charging"]
+            self.assertIsInstance(is_charging, bool)
+    def test_parking(self):
+        test_cases: list=[True, False, 'true,' 'jawohlja', 34, 5.4, 'a']
+        for i in test_cases:
+            park_post= post_request(
+                "/robot/create", params={"is_parking": i}
+            )
+            is_parking=park_post.json()["status"]["status"]["is_"]
+            self.assertIsInstance(is_parking, bool)
+            '''
+def test_robot_status_flags(self):
+    test_cases = [True, False, "true", "sergsrg", 23, 4.5, "a"]
+
+    status_flags = [
+        "is_charging",
+        "is_parked",
+        "is_reversing",
+        "is_door_opened"
+    ]
+
+    for flag in status_flags:
+        for value in test_cases:
+            response = post_request(
+                "/robot/create",
+                params={flag: value}
+            )
+
+            status_value = response.json()["status"]["status"][flag]
+            self.assertIsInstance(status_value, bool)
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
