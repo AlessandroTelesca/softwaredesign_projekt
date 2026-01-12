@@ -14,7 +14,7 @@ def reset_simulation():
     """
     Resets the simulation to its initial state.
     """
-    g.sim = Simulation()
+    g.sim.robots = []
     return json_response({"message": "Simulation reset successfully."})
 
 

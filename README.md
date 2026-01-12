@@ -40,7 +40,7 @@ is_charging: bool
 
 battery_status: float
 message: str
-led_rgb: tuple[int, int, int]
+led_rgb: list[int, int, int]
 packages: list[Package]
 ```
 Returns the status of the robot as well as its ID.  

@@ -2,6 +2,7 @@
 TODO: Docstring
 """
 from enum import Enum
+import numpy as np
 from setuptools._distutils.util import strtobool
 from backend.packages import Package, PackageSize
 
@@ -134,19 +135,31 @@ class Robot:
         self._message = val
 
     @property
-    def led_rgb(self) -> tuple[int, int, int]:
+    def led_rgb(self) -> list[int, int, int]:
         """
         TODO DOCSTRING
         """
         return self._led_rgb
 
     @led_rgb.setter
-    def led_rgb(self, led: tuple[int, int, int] = None):
+    def led_rgb(self, led: list[int, int, int] = None):
         """
-        TODO DOCSTRING
+        This sets the light of the LED. A LED is in RGB; it is an 8bit unisgned integer.
         """
-        # TODO
-        self._led_rgb = led
+        self._led_rgb = [0, 0, 0]
+        if led is None or len(led) != 3:
+            return
+
+        try:
+            if len(led) != 3:
+                self._led_rgb = [0, 0, 0]
+                return
+            r,g,b = np.clip(led, 0, 255)
+            self._led_rgb = [r, g, b]
+        except Exception as e:
+            print(e)
+            self._led_rgb = [0, 0, 0]
+            return
 
     def get_robot_status(self):
         """
