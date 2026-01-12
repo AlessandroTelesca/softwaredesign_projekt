@@ -21,7 +21,6 @@ def create_new_robot():
         "is_reversing": None,
         "is_charging": None,
         "battery_status": None,
-        "message": None,
         "led_rgb": None
     }
 
@@ -59,7 +58,6 @@ def get_robot_status():
     status = {
         "status": robot.status,
         "battery_status": robot.battery_status,
-        "message": robot.message,
         "led_rgb": robot.led_rgb,
         "packages": robot.packages,
     }
