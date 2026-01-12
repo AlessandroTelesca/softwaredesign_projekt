@@ -42,5 +42,7 @@ def set_time():
 @SIM_API.route("/api/sim/heartbeat", methods=["GET"])
 def heartbeat():
     """
-    TODO: Docstring.
+    Returns the current ticks, date, and time.
     """
+    return json_response({"ticks": g.sim.ticks, "date": g.sim.date(), "time": g.sim.time()}, 200)
+

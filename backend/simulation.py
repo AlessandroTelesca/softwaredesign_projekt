@@ -3,9 +3,9 @@ Singleton for the Flask backend.
 Provides a global Simulation instance.
 """
 import threading
-from datetime import date, time, datetime
 from backend.robot import Robot
 from time import sleep
+import datetime as dt
 
 
 class Simulation:
@@ -13,21 +13,18 @@ class Simulation:
     A simulation environment that holds multiple robots and manages the simulation time.
 
     robots (list[Robot]): A list of robots in the simulation.
-    current_date (date): The current date in the simulation.
-    current_time (time): The current time in the simulation.
     time_per_tick (int): The amount of simulated time that passes per tick, in seconds.
+    seconds_per_tick (int): The amount of seconds that pass with each tick.
+    date_and_time (datetime): The current date and time.
     """
     seconds_per_tick: int = 1
     time_per_tick: int = 60
-    _cur_date: date
-    _cur_time: time
+    _date_and_time: dt = None
     _robots: list[Robot] = []
     _ticks: int = 0
     thread: threading.Thread = None
 
-    def __init__(self, robots: list[Robot] = [], current_date: date = date.today(), current_time: time = time(), time_per_tick: int = 1):
-        self.current_date = current_date
-        self.current_time = current_time
+    def __init__(self, robots: list[Robot] = [], time_per_tick: int = 1):
         self.robots = robots
         self.seconds_per_tick = time_per_tick
 
@@ -36,34 +33,26 @@ class Simulation:
         self.thread.start()
 
     def __str__(self) -> str:
-        string = f"Date: {self.current_date} | Time: {self.current_time} | Ticks: {self.ticks} | Time Per Tick: {
-            self.seconds_per_tick} | Amount of Robots: {len(self.robots)}"
+        string = f"Datetime: {self.date_and_time.strftime("%d/%m/%Y, %H:%M")} | Ticks: {self.ticks} | Seconds Per Tick: {
+            self.seconds_per_tick} | Simulated Time Per Tick: {self.time_per_tick}s | Amount of Robots: {len(self.robots)}"
         return string
 
     ########################################################################################
     # Setters/Getters                                                                      #
     ########################################################################################
     @property
-    def current_date(self) -> date:
-        return self._cur_date
-
-    @current_date.setter
-    def current_date(self, day: int = -1, month: int = -1, year: int = -1):
-        if day == -1 or month == -1 or year == -1:
-            self._cur_date = date.today()
-            return
-        self._cur_date = date(year=year, month=month, day=day)
-
-    @property
-    def current_time(self) -> time:
-        return self._cur_time
-
-    @current_time.setter
-    def current_time(self, cur_time: time):
-        if cur_time is None:
-            self._cur_time = time()
-            return
-        self._cur_time = cur_time
+    def date_and_time(self) -> dt.datetime:
+        """
+        If there is no given date, will create the current time stamp. 
+        Otherwise simply returns its value.
+        """
+        if self._date_and_time is None:
+            self._date_and_time = dt.datetime.now()
+        return self._date_and_time
+    
+    @date_and_time.setter
+    def date_and_time(self, date_and_time: dt.datetime):
+        self._date_and_time = date_and_time
     
     @property
     def ticks(self) -> int:
@@ -81,13 +70,34 @@ class Simulation:
             self._robots = rbt
     
     def reset(self):
+        """
+        This fully resets the simulation.
+        """
         self._robots = []
-    
+        self._ticks = 0
 
     ### Async
     def timer_ticks(self):
+        """
+        This function runs off an autonomous thread.
+        This ensures that simulation is not impeding on the backend.
+        """
         while True:
             sleep(self.seconds_per_tick)
             self._ticks += 1
-            #print("ayo")
+            old_time = self.date_and_time
+            new_time = self.date_and_time + dt.timedelta(0, seconds=self.time_per_tick)
+            self._date_and_time = new_time
+    
+    ## Middleware
+    def date(self) -> str:
+        """
+        TODO: Docstring
+        """
+        return self.date_and_time.strftime("%d.%m.%y")
+    
+    def time(self) -> str:
+        return self.date_and_time.strftime("%H:%M")
+    
+
 
