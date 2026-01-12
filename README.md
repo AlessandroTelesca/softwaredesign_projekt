@@ -71,6 +71,15 @@ destination: str
 size: PackageSize[SMALL, LARGE]
 ```
 
+### Map
+Creates an iframe for a map.
+#### /api/map/route
+`/api/map/route` _/ POST_ creates a route between two points.
+```
+start: str
+end: str
+```
+
 ### Simulation
 Simulation (number of robots, packages, etc.) is tracked within runtime code. 
 #### /api/sim/reset

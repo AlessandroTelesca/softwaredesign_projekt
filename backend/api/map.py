@@ -33,9 +33,8 @@ def api_map():
 @MAP_API.route(f"{END_POINT}/route", methods=["POST"])
 def api_map_route():
     payload = request.get_json(silent=True) or {}
-    print(request.args.get("start"))
-    start = payload.get("start")
-    end = payload.get("end")
+    start = request.form["start"]
+    end = request.form["end"]
 
     if not isinstance(start, str) or not start.strip():
         return _bad_request("Missing or invalid 'start' (must be a non-empty string).")
