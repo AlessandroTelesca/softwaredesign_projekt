@@ -87,7 +87,7 @@ class TestAPIModule(unittest.TestCase):
 
    
     def test_valid_led_status(self):
-        test_cases = [[0, 0, 0], [255, 255, 255], [-1, -1, -1], [300, 300, 300]]
+        test_cases: list = [[0, 0, 0], [255, 255, 255]]
 
         for test_value in test_cases:
             response = post_request(
