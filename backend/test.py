@@ -96,19 +96,19 @@ class TestAPIModule(unittest.TestCase):
 
     def test_valid_led_status(self):
         
-        """Test possible LED status
+        """Test possible LED status by sending POST requests to /robot/create endpoint.
         """
 
         
         test_cases: list = [[0, 0, 0], [255, 255, 255]]
-
+        # Send POST requests with different LED status
         for test_value in test_cases:
             response = post_request(
                 "/robot/create", params={"led_rgb": test_value}
             )
-
+            # Check response code
             self.assertEqual(response.status_code, 200)
-
+            # look if response is empty
             self.assertTrue(
                 response.text.strip(),
                 f"Empty response body for input {test_value}",
@@ -118,10 +118,10 @@ class TestAPIModule(unittest.TestCase):
                 str_response = response.json()
             except ValueError:
                 self.fail(f"Response is not valid JSON: {response.text}")
-
+            
             self.assertIn("status", str_response)
             self.assertIn("led_rgb", str_response["status"])
-
+            # Check if status is list of3 ints
             led_status = str_response["status"]["led_rgb"]
             self.assertIsInstance(led_status, list)
             self.assertEqual(len(led_status), 3)
@@ -152,6 +152,9 @@ class TestAPIModule(unittest.TestCase):
             print("Parking status tested.")
    
     def test_robot_status_flags(self):
+        """tests robot status flags 
+        """
+        
         test_cases = [True, False, "true", "sergsrg", 23, 4.5, "a"]
 
         status_flags = [
@@ -174,7 +177,7 @@ class TestAPIModule(unittest.TestCase):
         print("Robot status flags tested.")
     
     def test_delete_robot_by_id(self):
-        """Test if a robot is deletable by his ID
+        """Test if a robot is deletable by his ID via /robot/delete/<robot_id> endpoint.
         """
         
         robot_id = 0
@@ -202,14 +205,14 @@ class TestAPIModuleSim(unittest.TestCase):
 
     def test_sim_reset(self):
                 """""
-                Test if the Simulation resets properly
+                Test if the Simulation resets properly by sending a POST request to /sim/reset endpoint.
                 """""
                 #create a robot
                 post_request("/robot/create") 
                 
                 #send POST request to reset simulation
                 response = post_request("/sim/reset")
-               
+                #check response status code and message
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.text.strip(), '{"message":"Simulation reset successfully."}')
                 
@@ -217,16 +220,17 @@ class TestAPIModuleSim(unittest.TestCase):
 
     def test_setting_time(self):
         """
-        Testing Time testcases
+        Testing Time testcases by sending POST requests to /sim/set_time endpoint.
         """
         test_cases: list = [
             ({"hours": "10", "minutes": "30", "seconds": "45"}, 200),
             ({"hours": "25", "minutes": "30"}, 400),  
             ({"hours": "10", "minutes": "61"}, 400),  
         ]
-
+        # POST requests with time settings
         for params, expected_status in test_cases:
             response = post_request("/sim/set_time", params=params)
+            # Check response status code
             self.assertEqual(response.status_code, expected_status)
         
         print("Simulation time setting tested.")
@@ -234,19 +238,20 @@ class TestAPIModuleSim(unittest.TestCase):
 
     def test_heartbeat(self):
         """
-        Tests heartbeat 
+        Tests heartbeat by checking if the response contains expected keys and types.
         """
+        # Send GET request to /sim/heartbeat
         response = get_request("/sim/heartbeat")
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-
+        # Check for expected keys and their types
         expected = {
             "ticks": int,
             "date": str,
             "time": str,
         }
-
+        # assert key and its type
         for key, expected_type in expected.items():
             self.assertIn(key, data)
             self.assertIsInstance(data[key], expected_type)
@@ -256,9 +261,11 @@ class TestAPIModuleSim(unittest.TestCase):
 class TestAPIModuleMap(unittest.TestCase):
     def test_map_GET(self):
         """
-        Tests GET request for map
+        Tests GET request for map endpoint by checking if the response contains a map.
         """
+        # Send GET request
         response = get_request("/map")
+        # Check response status code and presence of map
         self.assertEqual(response.status_code, 200)
         self.assertIn("map", response.json())
         
@@ -291,16 +298,17 @@ class TestAPIModuleMap(unittest.TestCase):
 
     def test_map_lines(self):
         """
-        Tests map/lines
+        Tests map/lines endpoint by checking if the response contains a list of lines.
         """
+        # Send GET request
         response = get_request("/map/lines")
-        
+        # Check response status code
         self.assertEqual(response.status_code, 200)
-        
+        # Check if response contains 'lines' key with a list
         data = response.json()
         self.assertIn("lines", data)
         self.assertIsInstance(data["lines"], list)
-        
+        # assert the list is not empty
         self.assertTrue(len(data["lines"]) > 0)
 
         print("Map lines tested")
