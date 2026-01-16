@@ -30,7 +30,7 @@ class Package:
         self._start = start
         self._destination = destination
         self._size = size
-    
+
     def __str__(self) -> str:
         return f"Package, Size {self._size.name}"
 

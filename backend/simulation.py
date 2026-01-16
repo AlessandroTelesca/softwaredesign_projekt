@@ -78,11 +78,11 @@ class Simulation:
             rbt: list[Robot] = self.robots
             rbt.append(robot)
             self._robots = rbt
-    
+
     @property
     def seconds_per_tick(self) -> int:
         return self._seconds_per_tick
-    
+
     @seconds_per_tick.setter
     def seconds_per_tick(self, val: int):
         try:

@@ -30,7 +30,7 @@ def create_new_pkg():
             return json_response({"error": "Missing start or destination point for package"}, 400)
 
         robot = g.sim.robots[robot_id]
-    except BadRequestKeyError as e:
+    except BadRequestKeyError:
         return json_response({"error": "Missing required parameter for package creation"}, 400)
     except IndexError:
         return json_response({"error": "Robot ID out of range"}, 400)
@@ -39,6 +39,6 @@ def create_new_pkg():
 
     pkg = Package(start=start, destination=destination, size=pkg_size)
 
-    robot.packages.append(pkg)
+    robot.add_package(pkg)
     g.sim.robots[robot_id] = robot
-    return json_response({"message": f"{pkg_size.name} Package added to Robot {robot_id}.", "robot_count": len(g.sim.robots)}, 200)
+    return json_response({"message": f"{pkg_size} Package added to Robot {robot_id}.", "robot_count": len(g.sim.robots)}, 200)

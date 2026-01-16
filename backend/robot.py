@@ -138,7 +138,7 @@ class Robot:
             if len(led) != 3:
                 self._led_rgb = [0, 0, 0]
                 return
-            r,g,b = np.clip(led, 0, 255)
+            r, g, b = np.clip(led, 0, 255)
             self._led_rgb = [r, g, b]
         except Exception as e:
             print(e)
@@ -162,31 +162,27 @@ class Robot:
     ########################################################################################
     @property
     def packages(self) -> list[Package]:
+        if self._packages is None:
+            self.packages = []
         return self._packages
 
     @packages.setter
-    def packages(self, size: PackageSize, start: str, destination: str):
-        """
-        TODO: Docstring
-        """
-        # TODO
+    def packages(self, val: list[Robot]):
+        self._packages = val
+
+    def add_package(self, pkg: Package) -> int:
+        """Adds a package to a robot. Returns -1 in case of an error; 0 otherwise."""
         if self._packages is None:
             self._packages = []
-
         if len(self._packages) >= MAX_NUM_OF_PACKAGES:
-            return False
+            return -1
         amount_small_packages: int = sum(
             1 for package in self.packages if package.size == PackageSize.SMALL)
         amount_large_packages: int = sum(
             1 for package in self.packages if package.size == PackageSize.LARGE)
-
-        if size is PackageSize.SMALL and amount_small_packages >= MAX_NUM_OF_SMALL_PACKAGES:
-            return False
-        if size is PackageSize.LARGE and amount_large_packages >= MAX_NUM_OF_SMALL_PACKAGES:
-            return False
-        pkg = Package(start=start, destination=destination, size=size)
+        if pkg.size is PackageSize.SMALL and amount_small_packages >= MAX_NUM_OF_SMALL_PACKAGES:
+            return -1
+        if pkg.size is PackageSize.LARGE and amount_large_packages >= MAX_NUM_OF_SMALL_PACKAGES:
+            return -1
         self._packages.append(pkg)
-        return True
-    
-    #def add_package():
-
+        return 0
