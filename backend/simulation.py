@@ -17,7 +17,7 @@ class Simulation:
     seconds_per_tick (int): The amount of seconds that pass with each tick.
     date_and_time (datetime): The current date and time.
     """
-    seconds_per_tick: int = 1
+    _seconds_per_tick: int = 1
     time_per_tick: int = 60
     _date_and_time: dt = None
     _robots: list[Robot] = []
@@ -78,6 +78,19 @@ class Simulation:
             rbt: list[Robot] = self.robots
             rbt.append(robot)
             self._robots = rbt
+    
+    @property
+    def seconds_per_tick(self) -> int:
+        return self._seconds_per_tick
+    
+    @seconds_per_tick.setter
+    def seconds_per_tick(self, val: int):
+        try:
+            val = int(val)
+            if val >= 1:
+                self._seconds_per_tick = val
+        except TypeError:
+            return
 
     def reset(self):
         """This fully resets the simulation. Sets a new start date at current time."""

@@ -99,6 +99,11 @@ Simulation (number of robots, packages, etc.) is tracked within runtime code.
 `/api/sim/reset` _/ POST_ resets the simulation; removes all robots and packages.
 #### /api/sim/time  
 `/api/sim/time` _/ GET_ checks the current datetime within the simulation. This isn't necessarily the current real time.  
+#### /api/sim/set_seconds_per_tick
+`/api/sim/set_seconds_per_tick` _/ POST_ sets the seconds per tick (has to be at least one).  
+```
+seconds_per_tick: int
+```
 #### /api/sim/heartbeat
 `/api/sim/heartbeat` _/ GET_ is a heartbeat monitor; tracks the amount of ticks, date, and time.
    
