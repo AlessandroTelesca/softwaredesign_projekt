@@ -41,6 +41,16 @@ class Simulation:
     # Setters/Getters                                                                      #
     ########################################################################################
     @property
+    def date(self) -> str:
+        """Returns the current date as a string."""
+        return self.date_and_time.strftime("%d.%m.%y")
+
+    @property
+    def time(self) -> str:
+        """Returns the current time as a string."""
+        return self.date_and_time.strftime("%H:%M")
+
+    @property
     def date_and_time(self) -> dt.datetime:
         """
         If there is no given date, will create the current time stamp. 
@@ -49,11 +59,11 @@ class Simulation:
         if self._date_and_time is None:
             self._date_and_time = dt.datetime.now()
         return self._date_and_time
-    
+
     @date_and_time.setter
     def date_and_time(self, date_and_time: dt.datetime):
         self._date_and_time = date_and_time
-    
+
     @property
     def ticks(self) -> int:
         return self._ticks
@@ -61,43 +71,29 @@ class Simulation:
     @property
     def robots(self) -> list[Robot]:
         return self._robots
-    
+
     @robots.setter
     def robots(self, robot: Robot = None):
         if robot:
             rbt: list[Robot] = self.robots
             rbt.append(robot)
             self._robots = rbt
-    
+
     def reset(self):
-        """
-        This fully resets the simulation.
-        """
+        """This fully resets the simulation. Sets a new start date at current time."""
         self._robots = []
         self._ticks = 0
+        self._date_and_time = dt.datetime.now()
 
-    ### Async
     def timer_ticks(self):
         """
-        This function runs off an autonomous thread.
-        This ensures that simulation is not impeding on the backend.
+        Runs off an autonomous thread.
+        Ensures simulation is running asynchronously with the backend.
+        Waits for an alotted time with self.seconds_per_tick.
         """
         while True:
             sleep(self.seconds_per_tick)
             self._ticks += 1
-            old_time = self.date_and_time
-            new_time = self.date_and_time + dt.timedelta(0, seconds=self.time_per_tick)
+            new_time = self.date_and_time + \
+                dt.timedelta(0, seconds=self.time_per_tick)
             self._date_and_time = new_time
-    
-    ## Middleware
-    def date(self) -> str:
-        """
-        TODO: Docstring
-        """
-        return self.date_and_time.strftime("%d.%m.%y")
-    
-    def time(self) -> str:
-        return self.date_and_time.strftime("%H:%M")
-    
-
-

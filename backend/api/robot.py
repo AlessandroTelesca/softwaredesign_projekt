@@ -67,16 +67,36 @@ def get_robot_status():
 @ROBOT_API.route("/api/robot/update/<int:robot_id>", methods=["POST"])
 def update_robot_status(robot_id: int):
     """
-    TODO: Docstring
+    Updates a robot status with the given parameters, if any.
     """
     if len(g.sim.robots) == 0:
         return json_response({"error": "No robots available"}), 404
     try:
         robot: Robot = g.sim.robots[int(robot_id)]
-        # TODO: Change robot
-        
+        form = request.form
+        is_parked = form["is_parked"]
+        is_door_opened = form["is_door_opened"]
+        is_reversing = form["is_reversing"]
+        is_charging = form["is_charging"]
+        battery_status = form["battery_status"]
+        led_rgb = form["led_rgb"]
+        packages = form["packages"]
 
+        if type(is_parked) is not None:
+            robot.status["is_parked"] = is_parked
+        if type(is_door_opened) is not None:
+            robot.status["is_reversing"] = is_reversing
+        if type(is_charging) is not None:
+            robot.status["is_charging"] = is_charging
+        if type(battery_status) is not None:
+            robot.battery_status = battery_status
+        if type(led_rgb) is not None:
+            robot.led_rgb = led_rgb
+        if type(packages) is not None:
+            robot.packages = packages
+        
         g.sim.robots[robot_id] = robot
+
     except IndexError:
         return json_response({"error": "Robot ID out of range"}), 404
     except TypeError:

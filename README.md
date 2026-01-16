@@ -29,7 +29,6 @@ Below is a documentation of the possible interactions with the frontend.
 
 ### Robots
 Robots can easily be created through API requests; they are assigned an ID. It is possible to get their current status.  
-TODO Update robot info, add them to maps
 #### /api/robot/create
 `/api/robot/create` _/ POST_ creates a new robot.
 ```
@@ -50,7 +49,17 @@ robot_id: int
 ```
 
 #### /api/robot/update/<int::robot_id>
-TODO
+`/api/robot/update/<int::robot_id>` _/ POST_ updates a specified robot with given parameters. All are optionally available to change, but is not necessary to do so.
+```
+is_parked: bool
+is_door_opened: bool
+is_reversing: bool
+is_charging: bool
+
+battery_status: float
+led_rgb: list[int, int, int]
+packages: list[Package]
+```
 
 #### /api/robot/delete
 `/api/robot/delete` _/ POST_ deletes a specified robot by its ID.
@@ -60,7 +69,7 @@ robot_id: int
 
 ### Packages
 To handle packages, there must at least be one robot in the simulation.  
-Packages are assigned to a robot; any robot can have a maximum of eight packages (two large, eight small).  
+Packages are assigned to a robot; any robot can have a maximum of eight packages (two large, six small).  
 Start defaults to Karlsruhe Hauptbahnhof; destination to Karlsruhe Durlach Bahnhof.
 #### /api/pkg/create
 `/api/pkg/create` _/ POST_ creates a new package and assigns it to a robot with a given ID.  

@@ -9,7 +9,7 @@ All API and middleware logic is located in the `api/` directory.
 ---
 
 ## Structure
-
+```
 backend/
 ├── api/
 │ ├── debug.py
@@ -34,7 +34,7 @@ backend/
 ├── route_animation.py
 ├── simulation.py
 └── test.py
-
+```
 ---
 
 ## Notes

@@ -44,5 +44,5 @@ def heartbeat():
     """
     Returns the current ticks, date, and time.
     """
-    return json_response({"ticks": g.sim.ticks, "date": g.sim.date(), "time": g.sim.time()}, 200)
+    return json_response({"ticks": g.sim.ticks, "date": g.sim.date, "time": g.sim.time}, 200)
 
