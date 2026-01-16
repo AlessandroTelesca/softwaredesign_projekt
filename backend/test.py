@@ -314,5 +314,89 @@ class TestAPIModuleMap(unittest.TestCase):
 
         print("Map lines tested")
 
+        # ---------------- PACKAGE API TESTS (NEU) ----------------
+
+    def test_create_package_no_robots(self):
+        # Simulation zurücksetzen
+        post_request("/sim/reset")
+
+        response = post_request("/pkg/create", params={
+            "robot_id": 0,
+            "pkg_size": 0,
+            "start": "A",
+            "destination": "B"
+        })
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("error", response.json())
+
+    def test_create_package_success(self):
+        # Roboter erstellen
+        post_request("/robot/create")
+
+        response = post_request("/pkg/create", params={
+            "robot_id": 0,
+            "pkg_size": 0,  # SMALL package
+            "start": "Warehouse",
+            "destination": "Station"
+        })
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertIn("message", data)
+        self.assertIn("robot_count", data)
+        self.assertIsInstance(data["robot_count"], int)
+
+    def test_create_package_missing_parameters(self):
+        post_request("/robot/create")
+
+        response = post_request("/pkg/create", params={
+            "robot_id": 0
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json())
+
+    def test_create_package_invalid_robot_id_type(self):
+        post_request("/robot/create")
+
+        response = post_request("/pkg/create", params={
+            "robot_id": "abc",
+            "pkg_size": 0,
+            "start": "A",
+            "destination": "B"
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json())
+
+    def test_create_package_robot_id_out_of_range(self):
+        post_request("/robot/create")
+
+        response = post_request("/pkg/create", params={
+            "robot_id": 99,
+            "pkg_size": 0,
+            "start": "A",
+            "destination": "B"
+        })
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("error", response.json())
+
+    def test_create_package_invalid_size(self):
+        post_request("/robot/create")
+
+        response = post_request("/pkg/create", params={
+            "robot_id": 0,
+            "pkg_size": 999,
+            "start": "A",
+            "destination": "B"
+        })
+
+        # Enum-Fehler → Flask wirft TypeError oder ValueError → 400
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json())
+
 if __name__ == "__main__":
     unittest.main()
