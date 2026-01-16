@@ -202,7 +202,7 @@ class TestAPIModuleSim(unittest.TestCase):
 
     def test_sim_reset(self):
                 """""
-                Test if the Simulation resets properly.
+                Test if the Simulation resets properly
                 """""
                 #create a robot
                 post_request("/robot/create") 
@@ -217,12 +217,12 @@ class TestAPIModuleSim(unittest.TestCase):
 
     def test_setting_time(self):
         """
-        Test setting the simulation time with multiple test cases.
+        Testing Time testcases
         """
         test_cases: list = [
             ({"hours": "10", "minutes": "30", "seconds": "45"}, 200),
-            ({"hours": "25", "minutes": "30"}, 400),  # Invalid hours
-            ({"hours": "10", "minutes": "61"}, 400),  # Invalid minutes
+            ({"hours": "25", "minutes": "30"}, 400),  
+            ({"hours": "10", "minutes": "61"}, 400),  
         ]
 
         for params, expected_status in test_cases:
@@ -230,9 +230,80 @@ class TestAPIModuleSim(unittest.TestCase):
             self.assertEqual(response.status_code, expected_status)
         
         print("Simulation time setting tested.")
-       
 
+
+    def test_heartbeat(self):
+        """
+        Tests heartbeat 
+        """
+        response = get_request("/sim/heartbeat")
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        expected = {
+            "ticks": int,
+            "date": str,
+            "time": str,
+        }
+
+        for key, expected_type in expected.items():
+            self.assertIn(key, data)
+            self.assertIsInstance(data[key], expected_type)
+        
+        print("Simulation heartbeat tested.")
+
+class TestAPIModuleMap(unittest.TestCase):
+    def test_map_GET(self):
+        """
+        Tests GET request for map
+        """
+        response = get_request("/map")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("map", response.json())
+        
+        print("Map GET request tested.")
+
+    # def test_map_route_POST_success(self): ##### ACHTUNG AI ######
+    #     """Tests map route
+    #     """
+    #     test_cases = {
+    #         "start": "Karlsruhe Hauptbahnhof, Germany",
+    #         "end": "Karlsruhe Durlach Bahnhof, Germany",
+    #     }
+    #     response = post_request("/map/route", test_cases)
+
+    #     self.assertEqual(response.status_code, 200)
+
+    #     data = response.json()
+    #     for key in ("map", "start", "end", "route_color"):
+    #         self.assertIn(key, data)
+
+    #     self.assertEqual(data["start"], "Karlsruhe Hauptbahnhof, Germany")
+    #     self.assertEqual(data["end"], "Karlsruhe Durlach Bahnhof, Germany")
+
+    #     self.assertEqual(data["route_color"], "#d32f2f")
+
+    #     self.assertIsInstance(data["map"], str)
+    #     self.assertTrue(data["map"])
+
+    #     print("Map route POST request (success) tested.")
+
+    def test_map_lines(self):
+        """
+        Tests map/lines
+        """
+        response = get_request("/map/lines")
+        
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertIn("lines", data)
+        self.assertIsInstance(data["lines"], list)
+        
+        self.assertTrue(len(data["lines"]) > 0)
+
+        print("Map lines tested")
 
 if __name__ == "__main__":
     unittest.main()
-    
