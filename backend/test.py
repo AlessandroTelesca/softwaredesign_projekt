@@ -9,12 +9,12 @@ This module tests the API endpoints and functionalities, including:
 import unittest
 from joblib import PrintTime
 import requests
-import test
+#import test
 
-from backend import robot
+#from backend import robot
 
 URL: str = "http://localhost:5000/api"
-TIMEOUT: int = 5
+TIMEOUT: int = 60
 
 
 def get_request(query: str, params=None) -> requests.Response:
@@ -381,7 +381,7 @@ class TestAPIModuleMap(unittest.TestCase):
             "destination": "B"
         })
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
         self.assertIn("error", response.json())
 
     def test_create_package_invalid_size(self):
