@@ -29,6 +29,8 @@ Below is a documentation of the possible interactions with the frontend.
 
 ### Robots
 Robots can easily be created through API requests; they are assigned an ID. It is possible to get their current status.  
+They must always have a `current_position`. If `current_position` is not set in POST request, defaults to Karlsruhe Hauptbahnhof.  
+Robots only have a destination if they have at least one package. TODO: Calculate most efficient final destination using Dijkstra
 #### /api/robot/create
 `/api/robot/create` _/ POST_ creates a new robot.
 ```
@@ -40,8 +42,10 @@ is_charging: bool
 battery_status: float
 led_rgb: list[int, int, int]
 packages: list[Package]
+current_position: str
 ```
 Returns the status of the robot as well as its ID.  
+
 #### /api/robot/read
 `/api/robot/read` _/ GET_ gets a specified robot by its ID.
 ```

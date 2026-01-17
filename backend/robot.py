@@ -59,17 +59,20 @@ class Robot:
     _battery_status: float
     _led_rgb: tuple[int, int, int]
     _packages: list[Package] = []
+    _current_destination: str = None
+    _current_position: str = "Karlsruhe, Hauptbahnhof, Germany"
 
     def __init__(self, is_parked=False, is_door_opened=False,
                  is_reversing: bool = False,
                  is_charging: bool = False, battery_status: float = 100.0,
-                 led_rgb: tuple[int, int, int] = (0, 0, 0)):
+                 led_rgb: tuple[int, int, int] = (0, 0, 0), current_position: str = "Karlsruhe, Hauptbahnhof, Germany"):
         self.status["is_charging"] = is_charging
         self.status["is_door_opened"] = is_door_opened
         self.status["is_parked"] = is_parked
         self.status["is_reversing"] = is_reversing
         self.battery_status = battery_status
         self.led_rgb = led_rgb
+        self.current_position = current_position
 
     def __str__(self) -> str:
         # TODO: Good overview string of Robot instance
@@ -154,12 +157,36 @@ class Robot:
             "battery_status": self.battery_status,
             "led_rgb": self.led_rgb,
             "packages": self.packages,
+            "current_position": self.current_position,
+            "current_destination": self.current_destination
         }
         return params
 
     ########################################################################################
+    # Positional                                                                           #
+    ########################################################################################
+    @property
+    def current_destination(self) -> str | None:
+        return self._current_destination
+
+    @current_destination.setter
+    def current_destination(self, val: str):
+        self._current_destination = val
+
+    @property
+    def current_position(self) -> str:
+        return self._current_position
+
+    @current_position.setter
+    def current_position(self, val: str):
+        self._current_position = val
+        if val is None:
+            self._current_position = "Karlsruhe Hauptbahnhof, Karlsruhe, Germany"
+
+    ########################################################################################
     # Packages                                                                             #
     ########################################################################################
+
     @property
     def packages(self) -> list[Package]:
         if self._packages is None:
@@ -184,5 +211,10 @@ class Robot:
             return -1
         if pkg.size is PackageSize.LARGE and amount_large_packages >= MAX_NUM_OF_SMALL_PACKAGES:
             return -1
+
+        # TODO: Add Dijkstra in case multiple destinations exist within more packages.
+        # TODO: Right now, it only adds a singular destination, but never changes.
+        if self._current_destination is None:
+            self._current_destination = pkg.destination
         self._packages.append(pkg)
         return 0
