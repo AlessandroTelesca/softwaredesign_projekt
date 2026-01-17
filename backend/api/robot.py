@@ -50,14 +50,14 @@ def get_robot_status():
         return json_response({"error": "No robots available"}), 404
     try:
         robot_id: int = int(request.args["robot_id"])
-        robot = g.sim.robots[robot_id]
+        robot: Robot = g.sim.robots[robot_id]
     except IndexError:
         return json_response({"error": "Robot ID out of range"}), 404
     except TypeError:
         return json_response({"error": "Invalid Robot ID"}), 400
 
     status = {
-        "status": robot.status,
+        "status": robot.to_dict(),
         "battery_status": robot.battery_status,
         "led_rgb": robot.led_rgb,
         "packages": robot.packages,
