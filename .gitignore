@@ -3,3 +3,9 @@
 backend/__pycache__/
 cache/
 *.pyc
+# Local generated HTML maps
+backend/*.html
+
+# Virtual env
+.venv/
+
