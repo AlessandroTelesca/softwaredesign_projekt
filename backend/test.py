@@ -275,11 +275,12 @@ class TestAPIModuleMap(unittest.TestCase):
         """Tests map route
         """
         # Send POST request
-        response = requests.post(
-            "http://localhost:5000/api/map/route",
-            data={"start": "Karlsruhe Hauptbahnhof, Germany", "end": "Karlsruhe Durlach Bahnhof, Germany"},
-            timeout=60  # Timeout to 60 sec because map generation might take some time
-        )
+        # response = requests.post(
+        #     "http://localhost:5000/api/map/route",
+        #     data={"start": "Karlsruhe Hauptbahnhof, Germany", "end": "Karlsruhe Durlach Bahnhof, Germany"},
+        #     timeout=60  # Timeout to 60 sec because map generation might take some time
+        # )
+        response = post_request("/map/route", params={"start": "Karlsruhe Hauptbahnhof, Germany", "end": "Karlsruhe Durlach Bahnhof, Germany"})
 
         self.assertEqual(response.status_code, 200)
         # Check if response contains expected keys

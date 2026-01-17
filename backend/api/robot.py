@@ -21,7 +21,8 @@ def create_new_robot():
         "is_reversing": None,
         "is_charging": None,
         "battery_status": None,
-        "led_rgb": None
+        "led_rgb": None,
+        "robot_id": len(g.sim.robots)
     }
 
     for key, _ in params.items():
@@ -36,7 +37,7 @@ def create_new_robot():
     robot: Robot = Robot(**kwargs)
     g.sim.robots.append(robot)
 
-    return json_response({"robot_id": len(g.sim.robots) - 1, "status": robot.get_robot_status(),
+    return json_response({"robot_id": len(g.sim.robots) - 1, "status": robot.to_dict(),
                           "robot_count": len(g.sim.robots)})
 
 
