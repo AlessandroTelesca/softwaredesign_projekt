@@ -1,14 +1,34 @@
 <div class="visualizer-root">
 
-  <div style="margin: 8px 0; display: flex; gap: 8px; align-items: center;">
-    <label>Robot ID:</label>
-    <input type="number" [(ngModel)]="robotId" style="width: 80px;" />
-    <button type="button" (click)="loadRobotStatus(robotId)">Load Status</button>
-    <span *ngIf="loading">Loading…</span>
-  </div>
+  <div class="overlay-card">
+    <div class="control-row">
+      <label class="field-label">Robot ID</label>
+      <input class="field-input" type="number" [(ngModel)]="robotId" />
+      <button class="btn primary" type="button" (click)="loadRobotStatus(robotId)">Load Status</button>
+      <span *ngIf="loading" class="badge">Loading…</span>
+    </div>
 
-  <pre *ngIf="robotStatus" style="background:#f7f7f7; padding:8px; max-width: 520px; overflow:auto;">{{ robotStatus | json }}</pre>
-  <div *ngIf="error" style="color:#b00020">{{ error }}</div>
+    <div class="control-row wrap">
+      <button class="btn ghost" type="button" (click)="createDemoRobots()" [disabled]="createLoading">Create 5 demo robots</button>
+      <span *ngIf="createLoading" class="badge">Creating…</span>
+      <span *ngIf="creationSummary" class="muted">{{ creationSummary }}</span>
+    </div>
+
+    <div *ngIf="robotStatus" class="panel">
+      <div class="panel-header">Robot Status</div>
+      <div class="stat-grid">
+        <div class="stat-row" *ngFor="let stat of statusStats">
+          <div class="stat-label">{{ stat.label }}</div>
+          <div class="stat-value">
+            <span *ngIf="stat.kind === 'bool'" class="chip" [ngClass]="stat.value ? 'positive' : 'neutral'">{{ stat.display }}</span>
+            <span *ngIf="stat.kind !== 'bool' && stat.display === '—'" class="chip muted">—</span>
+            <span *ngIf="stat.kind !== 'bool' && stat.display !== '—'">{{ stat.display }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="error" class="error-text">{{ error }}</div>
+  </div>
 
   <div #canvasContainer class="visualizer-container"></div>
 </div>
