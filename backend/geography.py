@@ -3,19 +3,19 @@ geography.py
 
 Route map generation using OSMnx + Folium.
 
-- shortest path route between two addresses (drive network)
-- grey base route (optional)
-- animated "thermometer" fill (red) with constant speed (distance-based)
-- moving vehicle marker:
-    - default: red dot (circle marker)
-    - optional: custom icon (lok.png) ONLY if enabled via JSON
-- km info box (optional)
+Two modes:
+A) robot_id is None -> classic client-side animation (distance-based, smooth)
+B) robot_id is given -> "Backend-master": robot position is simulated in backend,
+   map polls /api/robot/read and interpolates smoothly to avoid jumps/ruckeln.
+
+lok.png / vehicle icon is REMOVED (always red dot).
 """
 
 from __future__ import annotations
 
-import os
 import json
+import os
+from typing import Optional
 
 import folium
 import osmnx as ox
@@ -32,22 +32,18 @@ class Map:
         city: str = CITY_DEFAULT,
         route_color: str = "#d32f2f",
         animation_duration_s: float = 10.0,
-        smooth_steps_per_segment: int = 16,
         show_grey: bool = True,
         show_km: bool = True,
-        use_vehicle_icon: bool = False,  # 🔴 DEFAULT: red dot
+        robot_id: Optional[int] = None,  # if set => polling backend robot state
     ) -> None:
         self.city = city
         self.start = start
         self.end = end
-
         self.route_color = route_color
         self.animation_duration_s = float(animation_duration_s)
-        self.smooth_steps_per_segment = int(smooth_steps_per_segment)
-
         self.show_grey = bool(show_grey)
         self.show_km = bool(show_km)
-        self.use_vehicle_icon = bool(use_vehicle_icon)
+        self.robot_id = robot_id
 
     @staticmethod
     def _icons_dir() -> str:
@@ -55,9 +51,6 @@ class Map:
 
     @staticmethod
     def _route_length_km(G, route) -> float:
-        """
-        Robust length calculation across OSMnx versions using route_to_gdf.
-        """
         try:
             route_gdf = ox.routing.route_to_gdf(G, route, weight="length")
             total_m = float(route_gdf["length"].sum())
@@ -80,7 +73,6 @@ class Map:
         # 4) Shortest path
         route = ox.shortest_path(G, start_node, end_node, weight="length")
         coords = [(G.nodes[n]["y"], G.nodes[n]["x"]) for n in route]
-
         total_km = self._route_length_km(G, route)
 
         # 5) Build map
@@ -88,12 +80,7 @@ class Map:
 
         # Grey base route (optional)
         if self.show_grey:
-            folium.PolyLine(
-                coords,
-                color="gray",
-                weight=4,
-                opacity=0.45,
-            ).add_to(m)
+            folium.PolyLine(coords, color="gray", weight=4, opacity=0.45).add_to(m)
 
         # Start / End markers (stop icons)
         blue_stop = os.path.join(self._icons_dir(), "StopBlue.png")
@@ -136,168 +123,258 @@ class Map:
             """
             m.get_root().html.add_child(Element(info_html))
 
-        # 6) JS animation (constant speed, distance-based)
+        # 6) Animation JS
         route_js = json.dumps(coords)
         map_name = m.get_name()
 
-        # smooth -> step meters mapping
-        smooth = max(0, min(self.smooth_steps_per_segment, 50))
-        step_m = max(5, min(40, int(round(35 - smooth * 1.5))))
+        # Mode A: classic animation (no backend polling)
+        if self.robot_id is None:
+            duration_s = max(1.0, min(self.animation_duration_s, 60.0))
+            animation_block = f"""
+            <script>
+            (function() {{
+              window.addEventListener("load", function() {{
+                try {{
+                  var rawRoute = {route_js};
+                  var map = {map_name};
+                  if (!map || !rawRoute || rawRoute.length < 2 || typeof L === "undefined") return;
 
-        duration_s = max(1.0, min(self.animation_duration_s, 60.0))
+                  // resample by distance for constant speed
+                  function resampleByDistance(route, stepMeters) {{
+                    var out = [];
+                    out.push(route[0]);
+                    for (var i = 0; i < route.length - 1; i++) {{
+                      var a = L.latLng(route[i][0], route[i][1]);
+                      var b = L.latLng(route[i+1][0], route[i+1][1]);
+                      var dist = map.distance(a, b);
+                      if (dist <= 0) continue;
 
-        # vehicle icon exists?
-        lok_path_abs = os.path.join(self._icons_dir(), "lok.png")
-        lok_exists = os.path.exists(lok_path_abs)
+                      var n = Math.floor(dist / stepMeters);
+                      for (var k = 1; k <= n; k++) {{
+                        var t = (k * stepMeters) / dist;
+                        if (t >= 1) break;
+                        var lat = a.lat + (b.lat - a.lat) * t;
+                        var lng = a.lng + (b.lng - a.lng) * t;
+                        out.push([lat, lng]);
+                      }}
+                      out.push([b.lat, b.lng]);
+                    }}
+                    return out;
+                  }}
 
-        # HTML is saved into backend/ -> relative path to backend/icons/
-        lok_rel = "icons/lok.png"
+                  var route = resampleByDistance(rawRoute, 12);
 
-        animation_block = f"""
+                  // cumulative distance
+                  var cum = [0];
+                  var total = 0;
+                  for (var i = 0; i < route.length - 1; i++) {{
+                    total += map.distance(L.latLng(route[i][0], route[i][1]), L.latLng(route[i+1][0], route[i+1][1]));
+                    cum.push(total);
+                  }}
+
+                  var polyline = L.polyline([], {{ color: "{self.route_color}", weight: 5, opacity: 0.95 }}).addTo(map);
+                  var vehicle = L.circleMarker(route[0], {{
+                    radius: 6, color: "black", weight: 2,
+                    fillColor: "{self.route_color}", fillOpacity: 1
+                  }}).addTo(map);
+
+                  polyline.addLatLng(route[0]);
+                  var lastIndex = 0;
+                  var durationMs = {duration_s} * 1000;
+                  var startTs = null;
+
+                  function findIndexForDistance(d) {{
+                    for (var i = 0; i < cum.length - 1; i++) {{
+                      if (d >= cum[i] && d <= cum[i+1]) return i;
+                    }}
+                    return cum.length - 2;
+                  }}
+
+                  function frame(ts) {{
+                    if (startTs === null) startTs = ts;
+                    var elapsed = ts - startTs;
+                    var progress = Math.min(1, elapsed / durationMs);
+                    var targetDist = progress * total;
+                    var idx = findIndexForDistance(targetDist);
+
+                    while (lastIndex < idx) {{
+                      lastIndex++;
+                      polyline.addLatLng(route[lastIndex]);
+                    }}
+
+                    var segStart = L.latLng(route[idx][0], route[idx][1]);
+                    var segEnd = L.latLng(route[idx+1][0], route[idx+1][1]);
+                    var segFrom = cum[idx];
+                    var segTo = cum[idx+1];
+                    var within = (segTo - segFrom) > 0 ? (targetDist - segFrom) / (segTo - segFrom) : 0;
+                    within = Math.max(0, Math.min(1, within));
+
+                    var lat = segStart.lat + (segEnd.lat - segStart.lat) * within;
+                    var lng = segStart.lng + (segEnd.lng - segStart.lng) * within;
+
+                    vehicle.setLatLng([lat, lng]);
+
+                    if (progress < 1) requestAnimationFrame(frame);
+                    else {{
+                      vehicle.setLatLng(route[route.length - 1]);
+                    }}
+                  }}
+
+                  requestAnimationFrame(frame);
+
+                }} catch(e) {{
+                  console.error(e);
+                }}
+              }});
+            }})();
+            </script>
+            """
+            m.get_root().html.add_child(Element(animation_block))
+            return m.get_root().render()
+
+        # Mode B: Backend-master (poll robot state + interpolate)
+        robot_id = int(self.robot_id)
+
+        polling_block = f"""
         <script>
         (function() {{
           window.addEventListener("load", function() {{
-            try {{
-              var rawRoute = {route_js};
-              var map = {map_name};
+            var map = {map_name};
+            var rawRoute = {route_js};
+            if (!map || !rawRoute || rawRoute.length < 2 || typeof L === "undefined") return;
 
-              if (typeof L === "undefined" || !map || !rawRoute || rawRoute.length < 2) {{
-                console.warn("Animation prerequisites missing.");
-                return;
-              }}
-
-              function resampleByDistance(route, stepMeters) {{
-                var out = [];
-                out.push(route[0]);
-
-                for (var i = 0; i < route.length - 1; i++) {{
-                  var a = L.latLng(route[i][0], route[i][1]);
-                  var b = L.latLng(route[i+1][0], route[i+1][1]);
-                  var dist = map.distance(a, b);
-                  if (dist <= 0) continue;
-
-                  var n = Math.floor(dist / stepMeters);
-                  for (var k = 1; k <= n; k++) {{
-                    var t = (k * stepMeters) / dist;
-                    if (t >= 1) break;
-                    var lat = a.lat + (b.lat - a.lat) * t;
-                    var lng = a.lng + (b.lng - a.lng) * t;
-                    out.push([lat, lng]);
-                  }}
-                  out.push([b.lat, b.lng]);
-                }}
-
-                return out;
-              }}
-
-              var stepMeters = {step_m};
-              var route = resampleByDistance(rawRoute, stepMeters);
-
-              // cumulative distances
-              var cum = [0];
-              var total = 0;
+            // Build a resampled route for drawing and for progress->position mapping
+            function resampleByDistance(route, stepMeters) {{
+              var out = [];
+              out.push(route[0]);
               for (var i = 0; i < route.length - 1; i++) {{
-                var p1 = L.latLng(route[i][0], route[i][1]);
-                var p2 = L.latLng(route[i+1][0], route[i+1][1]);
-                total += map.distance(p1, p2);
-                cum.push(total);
-              }}
+                var a = L.latLng(route[i][0], route[i][1]);
+                var b = L.latLng(route[i+1][0], route[i+1][1]);
+                var dist = map.distance(a, b);
+                if (dist <= 0) continue;
 
-              var durationMs = {duration_s} * 1000;
-
-              // red progressive line
-              var polyline = L.polyline([], {{
-                color: "{self.route_color}",
-                weight: 5,
-                opacity: 0.95,
-                smoothFactor: 1.0
-              }}).addTo(map);
-
-              // ✅ DEFAULT is RED DOT
-              // Icon only if explicitly enabled AND file exists
-              var useIcon = {str(self.use_vehicle_icon).lower()} && {str(lok_exists).lower()};
-              var vehicle;
-
-              if (useIcon) {{
-                var vehicleIcon = L.icon({{
-                  iconUrl: "{lok_rel}",
-                  iconSize: [32, 32],
-                  iconAnchor: [16, 16]
-                }});
-                vehicle = L.marker(route[0], {{
-                  icon: vehicleIcon,
-                  interactive: false
-                }}).addTo(map);
-              }} else {{
-                vehicle = L.circleMarker(route[0], {{
-                  radius: 6,
-                  color: "black",
-                  weight: 2,
-                  fillColor: "{self.route_color}",
-                  fillOpacity: 1
-                }}).addTo(map);
-              }}
-
-              var lastIndex = 0;
-              polyline.addLatLng(route[0]);
-
-              function findIndexForDistance(d) {{
-                for (var i = 0; i < cum.length - 1; i++) {{
-                  if (d >= cum[i] && d <= cum[i+1]) return i;
+                var n = Math.floor(dist / stepMeters);
+                for (var k = 1; k <= n; k++) {{
+                  var t = (k * stepMeters) / dist;
+                  if (t >= 1) break;
+                  var lat = a.lat + (b.lat - a.lat) * t;
+                  var lng = a.lng + (b.lng - a.lng) * t;
+                  out.push([lat, lng]);
                 }}
-                return cum.length - 2;
+                out.push([b.lat, b.lng]);
               }}
-
-              var startTs = null;
-
-              function frame(ts) {{
-                if (startTs === null) startTs = ts;
-                var elapsed = ts - startTs;
-                var progress = Math.min(1, elapsed / durationMs);
-                var targetDist = progress * total;
-
-                var idx = findIndexForDistance(targetDist);
-
-                while (lastIndex < idx) {{
-                  lastIndex++;
-                  polyline.addLatLng(route[lastIndex]);
-                }}
-
-                var segStart = L.latLng(route[idx][0], route[idx][1]);
-                var segEnd = L.latLng(route[idx+1][0], route[idx+1][1]);
-
-                var segFrom = cum[idx];
-                var segTo = cum[idx+1];
-                var within = (segTo - segFrom) > 0 ? (targetDist - segFrom) / (segTo - segFrom) : 0;
-                within = Math.max(0, Math.min(1, within));
-
-                var lat = segStart.lat + (segEnd.lat - segStart.lat) * within;
-                var lng = segStart.lng + (segEnd.lng - segStart.lng) * within;
-
-                vehicle.setLatLng([lat, lng]);
-
-                if (progress < 1) {{
-                  window.requestAnimationFrame(frame);
-                }} else {{
-                  // finish
-                  if (lastIndex < route.length - 1) {{
-                    for (var j = lastIndex + 1; j < route.length; j++) {{
-                      polyline.addLatLng(route[j]);
-                    }}
-                  }}
-                  vehicle.setLatLng(route[route.length - 1]);
-                }}
-              }}
-
-              window.requestAnimationFrame(frame);
-
-            }} catch (e) {{
-              console.error("Route animation error:", e);
+              return out;
             }}
+
+            var route = resampleByDistance(rawRoute, 12);
+
+            // cumulative distances for mapping progress->position
+            var cum = [0];
+            var total = 0;
+            for (var i = 0; i < route.length - 1; i++) {{
+              total += map.distance(L.latLng(route[i][0], route[i][1]), L.latLng(route[i+1][0], route[i+1][1]));
+              cum.push(total);
+            }}
+
+            function posFromProgress(p) {{
+              p = Math.max(0, Math.min(1, p));
+              var target = p * total;
+
+              // find segment
+              var idx = 0;
+              for (var i = 0; i < cum.length - 1; i++) {{
+                if (target >= cum[i] && target <= cum[i+1]) {{ idx = i; break; }}
+              }}
+
+              var segFrom = cum[idx];
+              var segTo = cum[idx+1];
+              var within = (segTo - segFrom) > 0 ? (target - segFrom) / (segTo - segFrom) : 0;
+              within = Math.max(0, Math.min(1, within));
+
+              var a = L.latLng(route[idx][0], route[idx][1]);
+              var b = L.latLng(route[idx+1][0], route[idx+1][1]);
+              var lat = a.lat + (b.lat - a.lat) * within;
+              var lng = a.lng + (b.lng - a.lng) * within;
+              return [lat, lng];
+            }}
+
+            // Draw progressive red line (thermometer fill)
+            var polyline = L.polyline([], {{
+              color: "{self.route_color}", weight: 5, opacity: 0.95
+            }}).addTo(map);
+
+            // Vehicle marker (always red dot)
+            var vehicle = L.circleMarker(route[0], {{
+              radius: 6, color: "black", weight: 2,
+              fillColor: "{self.route_color}", fillOpacity: 1
+            }}).addTo(map);
+
+            // Interpolation state
+            var targetProgress = 0.0;
+            var shownProgress = 0.0;
+            var lastPollTs = performance.now();
+
+            // Avoid backward jumps
+            function setTarget(p) {{
+              p = Math.max(0, Math.min(1, p));
+              if (p < targetProgress) return;
+              targetProgress = p;
+            }}
+
+            // Poll backend frequently (smooth), but backend messages remain 1s/5%
+            async function poll() {{
+              try {{
+                var resp = await fetch("/api/robot/read?robot_id={robot_id}", {{ cache: "no-store" }});
+                if (!resp.ok) throw new Error("poll failed");
+                var data = await resp.json();
+                var st = data && data.status ? data.status : null;
+                if (st && typeof st.progress === "number") {{
+                  setTarget(st.progress);
+                }}
+              }} catch (e) {{
+                // ignore temporary errors
+              }} finally {{
+                setTimeout(poll, 250);
+              }}
+            }}
+            poll();
+
+            // Rendering loop: move smoothly towards targetProgress
+            var lastFrame = performance.now();
+            function frame(now) {{
+              var dt = (now - lastFrame) / 1000.0;
+              lastFrame = now;
+
+              // speed limiter: how fast progress can change per second (prevents "too fast at start")
+              // This makes the visible motion stable even if the first poll arrives late.
+              var maxDelta = 0.06 * dt; // ~6% per second max
+              var diff = targetProgress - shownProgress;
+              if (diff > maxDelta) diff = maxDelta;
+              if (diff < 0) diff = 0;
+
+              shownProgress = Math.min(1.0, shownProgress + diff);
+
+              // update vehicle position and progressive line
+              var pos = posFromProgress(shownProgress);
+              vehicle.setLatLng(pos);
+
+              // fill line based on shownProgress
+              var idx = Math.floor(shownProgress * (route.length - 1));
+              if (idx < 0) idx = 0;
+              if (idx >= route.length) idx = route.length - 1;
+
+              // reset polyline points cheaply
+              var pts = [];
+              for (var i = 0; i <= idx; i++) pts.push(route[i]);
+              polyline.setLatLngs(pts);
+
+              requestAnimationFrame(frame);
+            }}
+            requestAnimationFrame(frame);
           }});
         }})();
         </script>
         """
-        m.get_root().html.add_child(Element(animation_block))
 
+        m.get_root().html.add_child(Element(polling_block))
         return m.get_root().render()
