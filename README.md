@@ -120,6 +120,14 @@ cd frontend; npm start
 - After the frontend starts a browser will open itself with to tabs.
     if not: open your browser at `http://localhost:4200/map` and `http://localhost:4200/robot`.
 
+### Testing 
+
+- To start testing the backend needs to Run: `flask --app backend/app.py run`
+
+- Start running tests: `python -m unittest backend.test` in backend/test.py
+
+- The Unittest module was used to test all api requests and validation of statements
+
 ### Notes
 
 - Ensure the backend is running and its URL is configured in `src/app/env.ts` if needed.
