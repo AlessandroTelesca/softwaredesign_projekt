@@ -19,7 +19,7 @@ class Package:
     """
     TODO: Docstring
     """
-    _start: str
+    _start: str = "Karlsruhe Hauptbahnhof"
     _destination: str
     _size: PackageSize
 
@@ -30,12 +30,14 @@ class Package:
         self._start = start
         self._destination = destination
         self._size = size
-    
+
     def __str__(self) -> str:
         return f"Package, Size {self._size.name}"
 
     @property
     def start(self) -> str:
+        if self._start is None:
+            self.start = "Karlsruhe Hauptbahnhof"
         return self._start
 
     @start.setter
@@ -44,7 +46,7 @@ class Package:
 
     @property
     def destination(self) -> str:
-        return self._start
+        return self._destination
 
     @destination.setter
     def destination(self, value):

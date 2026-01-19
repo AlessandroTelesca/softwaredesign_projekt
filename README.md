@@ -29,7 +29,8 @@ Below is a documentation of the possible interactions with the frontend.
 
 ### Robots
 Robots can easily be created through API requests; they are assigned an ID. It is possible to get their current status.  
-TODO Update robot info, add them to maps
+They must always have a `current_position`. If `current_position` is not set in POST request, defaults to Karlsruhe Hauptbahnhof.  
+Robots only have a destination if they have at least one package. TODO: Calculate most efficient final destination using Dijkstra
 #### /api/robot/create
 `/api/robot/create` _/ POST_ creates a new robot.
 ```
@@ -41,8 +42,10 @@ is_charging: bool
 battery_status: float
 led_rgb: list[int, int, int]
 packages: list[Package]
+current_position: str
 ```
 Returns the status of the robot as well as its ID.  
+
 #### /api/robot/read
 `/api/robot/read` _/ GET_ gets a specified robot by its ID.
 ```
@@ -50,7 +53,17 @@ robot_id: int
 ```
 
 #### /api/robot/update/<int::robot_id>
-TODO
+`/api/robot/update/<int::robot_id>` _/ POST_ updates a specified robot with given parameters. All are optionally available to change, but is not necessary to do so.
+```
+is_parked: bool
+is_door_opened: bool
+is_reversing: bool
+is_charging: bool
+
+battery_status: float
+led_rgb: list[int, int, int]
+packages: list[Package]
+```
 
 #### /api/robot/delete
 `/api/robot/delete` _/ POST_ deletes a specified robot by its ID.
@@ -60,7 +73,7 @@ robot_id: int
 
 ### Packages
 To handle packages, there must at least be one robot in the simulation.  
-Packages are assigned to a robot; any robot can have a maximum of eight packages (two large, eight small).  
+Packages are assigned to a robot; any robot can have a maximum of eight packages (two large, six small).  
 Start defaults to Karlsruhe Hauptbahnhof; destination to Karlsruhe Durlach Bahnhof.
 #### /api/pkg/create
 `/api/pkg/create` _/ POST_ creates a new package and assigns it to a robot with a given ID.  
@@ -90,6 +103,11 @@ Simulation (number of robots, packages, etc.) is tracked within runtime code.
 `/api/sim/reset` _/ POST_ resets the simulation; removes all robots and packages.
 #### /api/sim/time  
 `/api/sim/time` _/ GET_ checks the current datetime within the simulation. This isn't necessarily the current real time.  
+#### /api/sim/set_seconds_per_tick
+`/api/sim/set_seconds_per_tick` _/ POST_ sets the seconds per tick (has to be at least one).  
+```
+seconds_per_tick: int
+```
 #### /api/sim/heartbeat
 `/api/sim/heartbeat` _/ GET_ is a heartbeat monitor; tracks the amount of ticks, date, and time.
    
