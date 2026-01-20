@@ -2,8 +2,9 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as THREE from 'three';
+import { forkJoin } from 'rxjs';
 // import GLTFLoader from 'three/examples/jsm/loaders/GLTFLoader';
-import { RobotService, RobotStatus } from './robot.service';
+import { CreateRobotParams, RobotService, RobotStatus } from './robot.service';
 
 @Component({
   selector: 'app-robot-visualizer',
@@ -42,6 +43,52 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
   public robotStatus: RobotStatus | null = null;
   public loading = false;
   public error: string | null = null;
+  public createLoading = false;
+  public creationSummary: string | null = null;
+
+  // Derived stats view model for template list
+  public get statusStats(): { label: string; kind: 'bool' | 'text'; value: any; display: string }[] {
+    if (!this.robotStatus) return [];
+
+    const s = this.robotStatus;
+    const batteryDisplay = this.formatBattery(s.battery_status);
+    const ledDisplay = Array.isArray(s.led_rgb) ? s.led_rgb.join(', ') : '—';
+    const packageDisplay = Array.isArray(s.packages)
+      ? `${s.packages.length} package${s.packages.length === 1 ? '' : 's'}`
+      : '—';
+    const packageCount = s.package_count ?? (Array.isArray(s.packages) ? s.packages.length : null);
+    const packageLarge = s.package_count_large ?? null;
+    const packageSmall = (s as any).package_count_small ?? null;
+    const messageDisplay = (s.message && s.message.trim()) ? s.message : '—';
+
+    return [
+      { label: 'Robot ID', kind: 'text', value: s.robot_id ?? '—', display: s.robot_id ?? '—' },
+      { label: 'Battery', kind: 'text', value: batteryDisplay, display: batteryDisplay },
+      { label: 'Charging', kind: 'bool', value: s.is_charging, display: s.is_charging ? 'Yes' : 'No' },
+      { label: 'Parked', kind: 'bool', value: s.is_parked, display: s.is_parked ? 'Yes' : 'No' },
+      { label: 'Door Open', kind: 'bool', value: s.is_door_opened, display: s.is_door_opened ? 'Yes' : 'No' },
+      { label: 'Reversing', kind: 'bool', value: s.is_reversing, display: s.is_reversing ? 'Yes' : 'No' },
+      { label: 'LED (R,G,B)', kind: 'text', value: ledDisplay, display: ledDisplay },
+      { label: 'Packages', kind: 'text', value: packageDisplay, display: packageDisplay },
+      { label: 'Package Count', kind: 'text', value: packageCount ?? '—', display: packageCount ?? '—' },
+      { label: 'Package Large', kind: 'text', value: packageLarge ?? '—', display: packageLarge ?? '—' },
+      { label: 'Package Small', kind: 'text', value: packageSmall ?? '—', display: packageSmall ?? '—' },
+      { label: 'Message', kind: 'text', value: messageDisplay, display: messageDisplay }
+    ];
+  }
+
+  private formatBattery(status: number | string | null): string {
+    if (status === null || status === undefined || status === '') return '—';
+
+    const numeric = typeof status === 'number' ? status : parseInt(status, 10);
+    if (!Number.isNaN(numeric)) {
+      const clamped = Math.max(0, Math.min(100, numeric));
+      return `${clamped}%`;
+    }
+
+    if (typeof status === 'string') return status;
+    return '—';
+  }
 
   constructor(private robotService: RobotService) {}
 
@@ -83,6 +130,47 @@ export class RobotVisualizerComponent implements AfterViewInit, OnDestroy {
         this.robotStatus = null;
         const backendMsg: string | undefined = err?.error?.error || err?.error?.message;
         this.error = backendMsg || (err?.message) || 'Unbekannter Fehler beim Laden des Roboters.';
+      }
+    });
+  }
+
+  public createDemoRobots(): void {
+    this.createLoading = true;
+    this.error = null;
+    this.creationSummary = null;
+
+    const robotConfigs: CreateRobotParams[] = [
+      { robot_id: 0, is_parked: true, is_charging: false, is_door_opened: false, is_reversing: false, battery_status: 96, message: 'Idle at depot' },
+      { robot_id: 1, is_parked: false, is_charging: false, is_door_opened: false, is_reversing: true, battery_status: 72, message: 'Backing out of bay' },
+      { robot_id: 2, is_parked: false, is_charging: true, is_door_opened: true, is_reversing: false, battery_status: 34, message: 'Charging with door open' },
+      { robot_id: 3, is_parked: true, is_charging: false, is_door_opened: true, is_reversing: false, battery_status: 58, message: 'Loading packages' },
+      { robot_id: 4, is_parked: false, is_charging: true, is_door_opened: false, is_reversing: false, battery_status: 15, message: 'Returning to dock (low battery)' }
+    ];
+
+    const requests = robotConfigs.map(cfg => this.robotService.createRobot(cfg));
+
+    forkJoin(requests).subscribe({
+      next: (responses) => {
+        this.createLoading = false;
+
+        const successful = responses.filter(r => !r.error);
+        if (successful.length === 0) {
+          this.error = 'Keine Roboter konnten erstellt werden.';
+          return;
+        }
+
+        const last = successful[successful.length - 1];
+        this.creationSummary = `Erstellt: ${successful.length} Roboter; Gesamt: ${last.robot_count ?? 'unbekannt'}`;
+
+        if (typeof last.robot_id === 'number') {
+          this.robotId = last.robot_id;
+          this.loadRobotStatus(last.robot_id);
+        }
+      },
+      error: (err) => {
+        this.createLoading = false;
+        const backendMsg: string | undefined = err?.error?.error || err?.error?.message;
+        this.error = backendMsg || (err?.message) || 'Unbekannter Fehler beim Erstellen der Roboter.';
       }
     });
   }
